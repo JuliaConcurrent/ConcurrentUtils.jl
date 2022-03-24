@@ -1,0 +1,12 @@
+name = "ConcurrentUtilsBenchmarks"
+uuid = "3e9c3bac-f725-47ac-a20d-a7ddd9bc8deb"
+authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
+version = "0.1.0-DEV"
+
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+ConcurrentUtils = "3df5f688-6c4c-4767-8685-17f5ad261477"
+SyncBarriers = "3986aa12-c984-439b-887a-f8545bea0e93"
+
+[compat]
+julia = "1.6"

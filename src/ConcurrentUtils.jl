@@ -12,6 +12,7 @@ export
     Promise,
     Promise,
     ReentrantCLHLock,
+    TaskObliviousLock,
     ThreadLocalStorage
 
 export Try, Err, Ok
@@ -58,6 +59,8 @@ InternalPrelude.@exported_function release_write
 InternalPrelude.@exported_function try_acquire_read
 InternalPrelude.@exported_function try_acquire_write
 
+InternalPrelude.@exported_function spinloop
+
 # Maybe:
 # * @static_thread_local_storage
 # * Copy AsyncFinalizers.SingleReaderDualBag?
@@ -87,6 +90,7 @@ using ..ConcurrentUtils:
     release,
     release_read,
     release_write,
+    spinloop,
     try_acquire_read,
     try_acquire_write,
     try_fetch,
@@ -117,5 +121,6 @@ const Promise = Internal.Promise
 const ThreadLocalStorage = Internal.ThreadLocalStorage
 const ReentrantCLHLock = Internal.ReentrantCLHLock
 const NonreentrantCLHLock = Internal.NonreentrantCLHLock
+const TaskObliviousLock = NonreentrantCLHLock
 
 end  # baremodule ConcurrentUtils

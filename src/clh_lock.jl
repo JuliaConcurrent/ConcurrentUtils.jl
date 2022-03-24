@@ -2,6 +2,9 @@ struct IsLocked end
 
 mutable struct LockQueueNode
     @atomic state::Union{IsLocked,Task,Nothing}
+    _pad::NTuple{7,Int}
+
+    LockQueueNode(state) = new(state)
 end
 
 @inline _islocked(node::LockQueueNode) = (@atomic :monotonic node.state) isa IsLocked
@@ -10,28 +13,30 @@ end
 abstract type CLHLock <: Lockable end
 
 mutable struct NonreentrantCLHLock <: CLHLock
-    # TODO: padding
     # TODO: node caching
     @atomic tail::LockQueueNode
+    @const _pad::NTuple{7,Int}
     current::LockQueueNode
 end
 
 const DUMMY_NODE = LockQueueNode(nothing)
 
-NonreentrantCLHLock() = NonreentrantCLHLock(LockQueueNode(nothing), DUMMY_NODE)
+NonreentrantCLHLock() =
+    NonreentrantCLHLock(LockQueueNode(nothing), ntuple(_ -> 0, Val(7)), DUMMY_NODE)
 
 mutable struct ReentrantCLHLock <: CLHLock
-    # TODO: padding
     # TODO: node caching
     @atomic tail::LockQueueNode
+    @const _pad::NTuple{7,Int}
     current::LockQueueNode
     @atomic owner::Union{Nothing,Task}
     count::Int
 end
 
-ReentrantCLHLock() = ReentrantCLHLock(LockQueueNode(nothing), DUMMY_NODE, nothing, 0)
+ReentrantCLHLock() =
+    ReentrantCLHLock(LockQueueNode(nothing), ntuple(_ -> 0, Val(7)), DUMMY_NODE, nothing, 0)
 
-function ConcurrentUtils.acquire(lock::CLHLock; nspins::Integer = 0)
+function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
     if lock isa ReentrantCLHLock
         if (@atomic :monotonic lock.owner) === current_task()
             lock.count += 1
@@ -40,20 +45,25 @@ function ConcurrentUtils.acquire(lock::CLHLock; nspins::Integer = 0)
     end
 
     node = LockQueueNode(IsLocked())
+    # TODO: do we need acquire for `lock.tail`?
     pred = @atomicswap :acquire_release lock.tail = node
     if !_islocked(pred)
         atomic_fence(:acquire)
+        # Main.@tlc notlocked
         @goto locked
     end
-    for _ in 1:nspins
+    for _ in oneto(nspins)
         if !_islocked(pred)
             atomic_fence(:acquire)
+            # Main.@tlc spinlock
             @goto locked
         end
+        spinloop()
     end
 
     task = current_task()
-    state, ok = @atomicreplace pred.state IsLocked() => task
+    # TODO: do we need acquire for `pred.state`?
+    state, ok = @atomicreplace(:acquire_release, :acquire, pred.state, IsLocked() => task)
     if ok
         @assert state isa IsLocked
         wait()
@@ -62,6 +72,7 @@ function ConcurrentUtils.acquire(lock::CLHLock; nspins::Integer = 0)
     else
         @assert state === nothing
     end
+    # Main.@tlc waited
 
     @label locked
     if lock isa ReentrantCLHLock

@@ -38,6 +38,14 @@ macro yield_unsafe(ex)
 end
 =#
 
+function ConcurrentUtils.spinloop()
+    GC.safepoint()
+    ccall(:jl_cpu_pause, Cvoid, ())
+end
+
+oneto(::Nothing) = ()
+oneto(n) = Base.OneTo(n)
+
 function unwrap_or_else(f, result)
     if Try.iserr(result)
         f(Try.unwrap_err(result))

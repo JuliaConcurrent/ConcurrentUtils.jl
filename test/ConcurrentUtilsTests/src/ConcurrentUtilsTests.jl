@@ -10,4 +10,6 @@ include("test_thread_local_storage.jl")
 include("test_locks.jl")
 include("test_read_write_lock.jl")
 
+include("test_benchmarks.jl")
+
 end  # module ConcurrentUtilsTests

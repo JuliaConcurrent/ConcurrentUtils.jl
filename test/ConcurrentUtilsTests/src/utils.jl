@@ -1,5 +1,7 @@
 module Utils
 
+using ConcurrentUtils
+
 function poll_until(f)
     for _ in 1:1000
         f() && return true
@@ -11,8 +13,7 @@ end
 # 1 tick is about 30 ns
 function unfair_sleep(nticks)
     for _ in 1:nticks
-        GC.safepoint()
-        ccall(:jl_cpu_pause, Cvoid, ())
+        spinloop()
     end
 end
 
