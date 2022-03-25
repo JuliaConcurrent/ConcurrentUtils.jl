@@ -46,6 +46,8 @@ end
 oneto(::Nothing) = ()
 oneto(n) = Base.OneTo(n)
 
+fieldoffset_by_name(T, name) = fieldoffset(T, findfirst(==(name), fieldnames(T)))
+
 function unwrap_or_else(f, result)
     if Try.iserr(result)
         f(Try.unwrap_err(result))

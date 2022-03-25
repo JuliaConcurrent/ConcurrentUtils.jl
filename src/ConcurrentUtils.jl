@@ -76,6 +76,7 @@ using Core.Intrinsics: atomic_fence
 using Core: OpaqueClosure
 
 using Try: Try, Ok, Err, @?
+import UnsafeAtomics: UnsafeAtomics, acq_rel
 
 import ..ConcurrentUtils: @once, @tasklet
 using ..ConcurrentUtils:

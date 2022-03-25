@@ -2,13 +2,18 @@ const NOTLOCKED = UInt64(0)
 const NREADERS_INC = UInt64(2)
 const WRITELOCK_MASK = UInt64(1)
 
+const NReadersAndWritelock = UInt64
+
 mutable struct ReadWriteLock <: ReadWriteLockable
-    @atomic nreaders_and_writelock::UInt64
+    @atomic nreaders_and_writelock::NReadersAndWritelock
     # TODO: use condition variables with lock-free notify
     @const lock::ReentrantLock
     @const cond_read::Threads.Condition
     @const cond_write::Threads.Condition
 end
+
+const OFFSET_NREADERS_AND_WRITELOCK =
+    fieldoffset_by_name(ReadWriteLock, :nreaders_and_writelock)
 
 function ReadWriteLock()
     lock = ReentrantLock()
@@ -39,7 +44,16 @@ function ConcurrentUtils.try_acquire_read(rwlock::ReadWriteLock; ntries::Integer
 end
 
 function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)
-    n = @atomic :acquire_release rwlock.nreaders_and_writelock += NREADERS_INC
+
+    # Using hardware FAA
+    ptr = Ptr{NReadersAndWritelock}(
+        pointer_from_objref(rwlock) + OFFSET_NREADERS_AND_WRITELOCK,
+    )
+    GC.@preserve rwlock begin
+        _, n = UnsafeAtomics.modify!(ptr, +, NREADERS_INC, acq_rel)
+    end
+    # n = @atomic :acquire_release rwlock.nreaders_and_writelock += NREADERS_INC
+
     if iszero(n & WRITELOCK_MASK)
         return
     end
@@ -56,7 +70,16 @@ function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)
 end
 
 function ConcurrentUtils.release_read(rwlock::ReadWriteLock)
-    n = @atomic :acquire_release rwlock.nreaders_and_writelock -= NREADERS_INC
+
+    # Using hardware FAA
+    ptr = Ptr{NReadersAndWritelock}(
+        pointer_from_objref(rwlock) + OFFSET_NREADERS_AND_WRITELOCK,
+    )
+    GC.@preserve rwlock begin
+        _, n = UnsafeAtomics.modify!(ptr, -, NREADERS_INC, acq_rel)
+    end
+    # n = @atomic :acquire_release rwlock.nreaders_and_writelock -= NREADERS_INC
+
     @assert iszero(n & WRITELOCK_MASK)
     if iszero(n)
         lock(rwlock.lock) do
