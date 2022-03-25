@@ -103,11 +103,10 @@ function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
     task = current_task()
     # The acquire ordering is for `acquire(lock)` semantics. The release ordering is for
     # task's fields:
-    state, ok = @atomicreplace(:acquire_release, :acquire, pred.state, IsLocked() => task)
-    if ok
-        @assert state isa IsLocked
+    state = @atomicswap :acquire_release pred.state = task
+    if state isa IsLocked
         wait()
-        @assert pred.state === task
+        @assert pred.state === nothing
         # @atomic :monotonic pred.state = nothing  # if reusing
     else
         @assert state === nothing
@@ -125,16 +124,13 @@ function ConcurrentUtils.release(lock::CLHLock)
     node = lock.current
     # The release ordering is for `release(lock)` semantics. The acquire ordering is for
     # task's fields:
-    state, ok = @atomicreplace(
-        :acquire_release,
-        :acquire,
-        node.state,
-        IsLocked() => nothing,  # try to unlock the node
-    )
-    if !ok
+    state = @atomicswap :acquire_release node.state = nothing
+    if state isa Task
         # The waiter is already sleeping. Wake it up.
         task = state::Task
         schedule(task)
+    else
+        @assert state isa IsLocked  # i.e., not `nothing`
     end
     return
 end
