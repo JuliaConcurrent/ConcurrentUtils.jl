@@ -4,22 +4,22 @@ using ConcurrentUtils
 using Test
 
 function test_serial()
-    tls = ThreadLocalStorage()
-    tls[] = 123
-    @test tls[] == 123
+    tls = ThreadLocalStorage(Ref{Any})
+    tls[][] = 123
+    @test tls[][] == 123
 end
 
 function check_concurrent_increments(ntasks, ntries)
-    tls = ThreadLocalStorage{Int}()
+    tls = ThreadLocalStorage(Ref{Any})
     outputs = zeros(Int, ntasks)
     @sync begin
         for itask in 1:ntasks
             Threads.@spawn begin
-                tls[] = 0
+                tls[][] = 0
                 for _ in 1:ntries
-                    tls[] += 1
+                    tls[][] += 1
                 end
-                outputs[itask] = tls[]
+                outputs[itask] = tls[][]
             end
         end
     end

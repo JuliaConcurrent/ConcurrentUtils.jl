@@ -48,6 +48,9 @@ oneto(n) = Base.OneTo(n)
 
 fieldoffset_by_name(T, name) = fieldoffset(T, findfirst(==(name), fieldnames(T)))
 
+_typeof(x) = typeof(x)
+_typeof(::Type{T}) where {T} = Type{T}
+
 function unwrap_or_else(f, result)
     if Try.iserr(result)
         f(Try.unwrap_err(result))
