@@ -111,6 +111,10 @@ include("lock_interface.jl")
 include("clh_lock.jl")
 include("read_write_lock.jl")
 
+for _ = 1:2
+    nothing
+end
+
 end  # module Internal
 
 const Promise = Internal.Promise
