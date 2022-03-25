@@ -5,6 +5,9 @@
 ConcurrentUtils.acquire(lck::Base.AbstractLock) = lock(lck)
 ConcurrentUtils.release(lck::Base.AbstractLock) = unlock(lck)
 
+ConcurrentUtils.acquire(x) = Base.acquire(x)
+ConcurrentUtils.release(x) = Base.release(x)
+
 function ConcurrentUtils.try_acquire(lck::Base.AbstractLock)
     if trylock(lck)
         return Ok(nothing)
@@ -13,8 +16,8 @@ function ConcurrentUtils.try_acquire(lck::Base.AbstractLock)
     end
 end
 
-function ConcurrentUtils.acquire_then(f, lock)
-    acquire(lock)
+function ConcurrentUtils.acquire_then(f, lock; acquire_options...)
+    acquire(lock; acquire_options...)
     try
         return f()
     finally

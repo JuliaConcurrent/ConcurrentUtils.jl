@@ -4,6 +4,7 @@ authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
 version = "0.1.0-DEV"
 
 [deps]
+ExternalDocstrings = "e189563c-0753-4f5e-ad5c-be4293c83fb4"
 Try = "bf1d0ff0-c4a9-496b-85f0-2b0d71c4f32a"
 UnsafeAtomics = "013be700-e6cd-48c3-b4a1-df204f14c38f"
 

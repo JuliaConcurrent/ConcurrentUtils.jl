@@ -10,7 +10,6 @@ export
     NotSetError,
     OccupiedError,
     Promise,
-    Promise,
     ReentrantCLHLock,
     TaskObliviousLock,
     ThreadLocalStorage
@@ -75,8 +74,9 @@ module Internal
 using Core.Intrinsics: atomic_fence
 using Core: OpaqueClosure
 
-using Try: Try, Ok, Err, @?
 import UnsafeAtomics: UnsafeAtomics, acq_rel
+using ExternalDocstrings: @define_docstrings
+using Try: Try, Ok, Err, @?
 
 import ..ConcurrentUtils: @once, @tasklet
 using ..ConcurrentUtils:
@@ -123,5 +123,7 @@ const ThreadLocalStorage = Internal.ThreadLocalStorage
 const ReentrantCLHLock = Internal.ReentrantCLHLock
 const NonreentrantCLHLock = Internal.NonreentrantCLHLock
 const TaskObliviousLock = NonreentrantCLHLock
+
+Internal.@define_docstrings
 
 end  # baremodule ConcurrentUtils

@@ -5,7 +5,7 @@ mutable struct ThreadLocalStorage{T,Factory}
     @const cond::Threads.Condition
 end
 
-ThreadLocalStorage{T}(factory = T) where {T} =
+ThreadLocalStorage{T}(factory) where {T} =
     ThreadLocalStorage{T,_typeof(factory)}(factory, T[], Threads.Condition())
 
 function ThreadLocalStorage(factory)
@@ -24,7 +24,7 @@ function unsafe_empty!(tls::ThreadLocalStorage)
 end
 =#
 
-function getstorages!(tls::ThreadLocalStorage)
+function getstorages!(tls::ThreadLocalStorage{T}) where {T}
     storages = @atomic :acquire tls.storages
     if length(storages) >= Threads.nthreads()
         return storages
@@ -37,10 +37,9 @@ function getstorages!(tls::ThreadLocalStorage)
         end
         resize!(storages, Threads.nthreads())
         local factory = tls.factory
-        if factory !== nothing
-            for i in n+1:Threads.nthreads()
-                storages[i] = factory()
-            end
+        for i in n+1:Threads.nthreads()
+            local value = factory()::T
+            storages[i] = value
         end
         return storages
     end

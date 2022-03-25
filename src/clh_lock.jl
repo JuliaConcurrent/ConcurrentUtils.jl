@@ -36,6 +36,18 @@ end
 ReentrantCLHLock() =
     ReentrantCLHLock(LockQueueNode(nothing), ntuple(_ -> 0, Val(7)), DUMMY_NODE, nothing, 0)
 
+function ConcurrentUtils.try_acquire(lock::CLHLock)
+    pred = @atomic :monotonic lock.tail
+    if !_islocked(pred)
+        node = LockQueueNode(IsLocked())
+        _, ok = @atomicreplace(:acquire_release, :acquire, lock.tail, pred => node)
+        if ok
+            return Ok(nothing)
+        end
+    end
+    return Err(NotAcquirableError())
+end
+
 function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
     if lock isa ReentrantCLHLock
         if (@atomic :monotonic lock.owner) === current_task()

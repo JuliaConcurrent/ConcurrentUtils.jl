@@ -15,9 +15,3 @@ Common verbs that appear as a primitive concept:
 * `fetch`
 * `acquire`
 * `release`
-
-Using `acquire`/`release` instead of `lock`/`unlock` so that:
-
-1. Variable `lock` can be used.
-2. Make it clear that `ConcurrentUtils.try_acquire(lock) -> result::Union{Ok,Err}` and
-   `Base.trylock(lock) -> locked::Bool` have different return types.
