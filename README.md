@@ -14,7 +14,8 @@ high-level APIs include:
   a `Promise`-like memoized thunk.
 * [`@once code`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.@once):
   execute the `code` at most once.
-* [`read_write_lock`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.read_write_lock)
-* ...and more
+* [`read_write_lock`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.read_write_lock):
+  a reader-writer lock.
+* ... and more
 
 See more in the [Documentation](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/).
