@@ -24,7 +24,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "JuliaConcurrent/ConcurrentUtils.jl",
+    repo = "github.com/JuliaConcurrent/ConcurrentUtils.jl",
     devbranch = "main",
     push_preview = true,
     # Ref:
