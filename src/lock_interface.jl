@@ -78,7 +78,8 @@ struct ReadLockHandle{RWLock} <: Lockable
     rwlock::RWLock
 end
 
-ConcurrentUtils.try_race_acquire(lock::WriteLockHandle) = try_race_acquire_write(lock.rwlock)
+ConcurrentUtils.try_race_acquire(lock::WriteLockHandle) =
+    try_race_acquire_write(lock.rwlock)
 ConcurrentUtils.acquire(lock::WriteLockHandle) = acquire_write(lock.rwlock)
 ConcurrentUtils.release(lock::WriteLockHandle) = release_write(lock.rwlock)
 
