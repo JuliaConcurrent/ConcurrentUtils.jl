@@ -7,7 +7,7 @@ using ..TestLocks: check_minimal_lock_interface
 using ..Utils: poll_until, unfair_sleep
 
 function test_no_blocks()
-    rlock, wlock = read_write_locks()
+    rlock, wlock = read_write_lock()
 
     @sync begin
         acquire(rlock)
@@ -25,12 +25,12 @@ function test_no_blocks()
 end
 
 function test_wlock()
-    _, wlock = read_write_locks()
+    _, wlock = read_write_lock()
     check_minimal_lock_interface(wlock)
 end
 
 function test_a_writer_blocks_a_reader()
-    rlock, wlock = read_write_locks()
+    rlock, wlock = read_write_lock()
     locked = Threads.Atomic{Bool}(false)
     @sync acquire_then(wlock) do
         Threads.@spawn begin
@@ -46,7 +46,7 @@ function test_a_writer_blocks_a_reader()
 end
 
 function test_a_writer_blocks_a_writer()
-    _rlock, wlock = read_write_locks()
+    _rlock, wlock = read_write_lock()
 
     locked = Threads.Atomic{Bool}(false)
     @sync acquire_then(wlock) do
@@ -63,7 +63,7 @@ function test_a_writer_blocks_a_writer()
 end
 
 function test_a_reader_blocks_a_writer()
-    rlock, wlock = read_write_locks()
+    rlock, wlock = read_write_lock()
 
     locked = Threads.Atomic{Bool}(false)
     @sync acquire_then(rlock) do
@@ -80,7 +80,7 @@ function test_a_reader_blocks_a_writer()
 end
 
 function check_concurrent_mutex(nreaders, nwriters, ntries)
-    rlock, wlock = read_write_locks()
+    rlock, wlock = read_write_lock()
 
     limit = nwriters * ntries
     # nreads = Threads.Atomic{Int}(0)

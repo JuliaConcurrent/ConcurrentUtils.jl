@@ -1,4 +1,4 @@
-    read_write_locks() -> (rlock, wlock)
+    read_write_lock() -> (rlock, wlock)
 
 Return the read handle `rlock` and the write handle `wlock` of a read-write lock.
 

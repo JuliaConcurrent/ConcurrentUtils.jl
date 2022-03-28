@@ -56,7 +56,7 @@ DocumentationOverview.table_md(
         ReentrantCLHLock,
         NonreentrantCLHLock,
         TaskObliviousLock,
-        read_write_locks,
+        read_write_lock,
         acquire,
         release,
         try_acquire,
@@ -71,7 +71,7 @@ DocumentationOverview.table_md(
 ReentrantCLHLock
 NonreentrantCLHLock
 TaskObliviousLock
-read_write_locks
+read_write_lock
 acquire
 release
 try_acquire

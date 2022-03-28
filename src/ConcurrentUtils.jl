@@ -52,7 +52,7 @@ InternalPrelude.@exported_function acquire_read
 InternalPrelude.@exported_function acquire_read_then
 InternalPrelude.@exported_function acquire_write
 InternalPrelude.@exported_function acquire_write_then
-InternalPrelude.@exported_function read_write_locks
+InternalPrelude.@exported_function read_write_lock
 InternalPrelude.@exported_function release_read
 InternalPrelude.@exported_function release_write
 InternalPrelude.@exported_function try_acquire_read

@@ -6,7 +6,7 @@ using SyncBarriers
 
 include("../../../examples/raynal_read_write_lock.jl")
 
-raynal_read_write_locks() = read_write_locks(RaynalReadWriteLock())
+raynal_read_write_lock() = read_write_lock(RaynalReadWriteLock())
 
 function single_reentrantlock()
     lock = ReentrantLock()
@@ -60,7 +60,7 @@ function setup(;
     nrlocks = smoke ? 3 : 2^8,
     ntasks_list = default_ntasks_list(),
     nspins_barrier = 1_000_000,
-    locks = [read_write_locks, raynal_read_write_locks, single_reentrantlock],
+    locks = [read_write_lock, raynal_read_write_lock, single_reentrantlock],
 )
     suite = BenchmarkGroup()
     for ntasks in ntasks_list

@@ -4,7 +4,7 @@ using BenchmarkTools
 using ConcurrentUtils
 using SyncBarriers
 
-using ..BenchAcquireReleaseReadWriteLocks: raynal_read_write_locks, single_reentrantlock
+using ..BenchAcquireReleaseReadWriteLocks: raynal_read_write_lock, single_reentrantlock
 
 function setup_repeat_acquire_release(
     lock;
@@ -50,7 +50,7 @@ function setup(;
     nrlocks = smoke ? 3 : 2^8,
     ntasks_list = default_ntasks_list(),
     nspins_barrier = 1_000_000,
-    locks = [read_write_locks, raynal_read_write_locks, single_reentrantlock],
+    locks = [read_write_lock, raynal_read_write_lock, single_reentrantlock],
 )
     suite = BenchmarkGroup()
     for ntasks in ntasks_list

@@ -86,5 +86,5 @@ ConcurrentUtils.try_acquire(lock::ReadLockHandle) = try_acquire_read(lock.rwlock
 ConcurrentUtils.acquire(lock::ReadLockHandle) = acquire_read(lock.rwlock)
 ConcurrentUtils.release(lock::ReadLockHandle) = release_read(lock.rwlock)
 
-ConcurrentUtils.read_write_locks(lock::ReadWriteLockable = ReadWriteLock()) =
+ConcurrentUtils.read_write_lock(lock::ReadWriteLockable = ReadWriteLock()) =
     (ReadLockHandle(lock), WriteLockHandle(lock))
