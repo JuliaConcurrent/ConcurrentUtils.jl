@@ -23,7 +23,7 @@ jobs:
           using Pkg
           Pkg.activate("docs")
           Pkg.add([
-              PackageSpec(url = "https://github.com/tkf/Try.jl")
+              PackageSpec(url = "https://github.com/tkf/Try.jl"),
               PackageSpec(path = "."),
               PackageSpec(url = "https://github.com/tkf/DocumentationOverview.jl.git"),
           ])
