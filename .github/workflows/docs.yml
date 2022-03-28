@@ -19,14 +19,9 @@ jobs:
       - name: Install dependencies
         run: |
           using Pkg
-
-          @info "Installing Try.jl"
-          Pkg.activate(".")
-          Pkg.add(url = "https://github.com/tkf/Try.jl")
-
-          @info "Setting up docs/Project.toml"
           Pkg.activate("docs")
           Pkg.add([
+              PackageSpec(url = "https://github.com/tkf/Try.jl")
               PackageSpec(path = "."),
               PackageSpec(url = "https://github.com/tkf/DocumentationOverview.jl.git"),
           ])
