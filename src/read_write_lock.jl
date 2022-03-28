@@ -23,7 +23,7 @@ function ReadWriteLock()
 end
 
 # Not very efficient but lock-free
-function ConcurrentUtils.try_acquire_read(rwlock::ReadWriteLock; ntries::Integer = 128)
+function ConcurrentUtils.try_race_acquire_read(rwlock::ReadWriteLock; ntries::Integer = 128)
     old = @atomic :monotonic rwlock.nreaders_and_writelock
     for _ in 1:ntries
         if iszero(old & WRITELOCK_MASK)
@@ -89,7 +89,7 @@ function ConcurrentUtils.release_read(rwlock::ReadWriteLock)
     return
 end
 
-function ConcurrentUtils.try_acquire_write(rwlock::ReadWriteLock)
+function ConcurrentUtils.try_race_acquire_write(rwlock::ReadWriteLock)
     _, success = @atomicreplace(
         :acquire_release,
         :monotonic,
@@ -104,12 +104,12 @@ function ConcurrentUtils.try_acquire_write(rwlock::ReadWriteLock)
 end
 
 function ConcurrentUtils.acquire_write(rwlock::ReadWriteLock)
-    if Try.isok(try_acquire_write(rwlock))
+    if Try.isok(try_race_acquire_write(rwlock))
         return
     end
     lock(rwlock.lock) do
         while true
-            if Try.isok(try_acquire_write(rwlock))
+            if Try.isok(try_race_acquire_write(rwlock))
                 return
             end
             wait(rwlock.cond_write)

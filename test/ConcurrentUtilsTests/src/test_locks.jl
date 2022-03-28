@@ -24,8 +24,8 @@ function check_minimal_lock_interface(lock)
         release(lock)
     end
     @test phase[] == 2
-    # @test fetch(Threads.@spawn try_acquire(lock)) == Err(NotAcquirableError())
-    # @test fetch(Threads.@spawn try_acquire(lock)) == Ok(nothing)
+    # @test fetch(Threads.@spawn try_race_acquire(lock)) == Err(NotAcquirableError())
+    # @test fetch(Threads.@spawn try_race_acquire(lock)) == Ok(nothing)
 end
 
 function test_minimal_lock_interface()
@@ -61,17 +61,17 @@ function test_concurrent_mutex()
     end
 end
 
-function check_try_acquire(lock)
+function check_try_race_acquire(lock)
     acquire(lock)
-    @test fetch(Threads.@spawn try_acquire(lock)) == Err(NotAcquirableError())
+    @test fetch(Threads.@spawn try_race_acquire(lock)) == Err(NotAcquirableError())
     release(lock)
-    @test try_acquire(lock) == Ok(nothing)
+    @test try_race_acquire(lock) == Ok(nothing)
     release(lock)
 end
 
-function test_try_acquire()
+function test_try_race_acquire()
     @testset "$(nameof(T))" for T in [ReentrantLock]
-        check_try_acquire(T())
+        check_try_race_acquire(T())
     end
 end
 

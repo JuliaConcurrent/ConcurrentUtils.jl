@@ -8,10 +8,10 @@ using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
         Promise,
-        try_fetch,
-        try_fetch_or!,
-        fetch_or!,
-        try_put!,
+        try_race_fetch,
+        try_race_fetch_or!,
+        race_fetch_or!,
+        try_race_put!,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -20,10 +20,10 @@ DocumentationOverview.table_md(
 
 ```@docs
 Promise
-try_fetch
-try_fetch_or!
-fetch_or!
-try_put!
+try_race_fetch
+try_race_fetch_or!
+race_fetch_or!
+try_race_put!
 ```
 
 ## Promise-like interfaces
@@ -59,7 +59,7 @@ DocumentationOverview.table_md(
         read_write_lock,
         acquire,
         release,
-        try_acquire,
+        try_race_acquire,
         acquire_then,
     ],
     namespace = ConcurrentUtils,
@@ -74,7 +74,7 @@ TaskObliviousLock
 read_write_lock
 acquire
 release
-try_acquire
+try_race_acquire
 acquire_then
 ```
 

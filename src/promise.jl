@@ -29,7 +29,7 @@ function Base.wait(promise::Promise)
     return
 end
 
-function ConcurrentUtils.try_fetch(promise::Promise{T}) where {T}
+function ConcurrentUtils.try_race_fetch(promise::Promise{T}) where {T}
     value = @atomic :monotonic promise.value
     if value isa NotSet
         return Err(NotSetError())
@@ -39,7 +39,7 @@ function ConcurrentUtils.try_fetch(promise::Promise{T}) where {T}
     end
 end
 
-function ConcurrentUtils.try_fetch_or!(
+function ConcurrentUtils.try_race_fetch_or!(
     thunk::F,
     promise::Promise{T},
 )::Union{Ok{T},Err{T}} where {F,T}
@@ -61,14 +61,14 @@ function ConcurrentUtils.try_fetch_or!(
     end
 end
 
-ConcurrentUtils.fetch_or!(f::F, promise::Promise) where {F} =
-    unwrap_or_else(identity, try_fetch_or!(f, promise))
+ConcurrentUtils.race_fetch_or!(f::F, promise::Promise) where {F} =
+    unwrap_or_else(identity, try_race_fetch_or!(f, promise))
 
-function ConcurrentUtils.try_put!(
+function ConcurrentUtils.try_race_put!(
     promise::Promise{T},
     value,
 )::Union{Ok{T},Err{OccupiedError{T}}} where {T}
-    result = try_fetch_or!(Returns(value), promise)
+    result = try_race_fetch_or!(Returns(value), promise)
     if Try.isok(result)
         Err(OccupiedError{T}(Try.unwrap(result)))
     else
@@ -76,4 +76,4 @@ function ConcurrentUtils.try_put!(
     end
 end
 
-Base.put!(promise::Promise, value) = Try.unwrap(try_put!(promise, value))
+Base.put!(promise::Promise, value) = Try.unwrap(try_race_put!(promise, value))

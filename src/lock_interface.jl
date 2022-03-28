@@ -8,7 +8,7 @@ ConcurrentUtils.release(lck::Base.AbstractLock) = unlock(lck)
 ConcurrentUtils.acquire(x) = Base.acquire(x)
 ConcurrentUtils.release(x) = Base.release(x)
 
-function ConcurrentUtils.try_acquire(lck::Base.AbstractLock)
+function ConcurrentUtils.try_race_acquire(lck::Base.AbstractLock)
     if trylock(lck)
         return Ok(nothing)
     else
@@ -31,13 +31,13 @@ end
 
 abstract type Lockable end
 
-Base.trylock(lck::Lockable) = Try.isok(try_acquire(lck))
+Base.trylock(lck::Lockable) = Try.isok(try_race_acquire(lck))
 Base.lock(lck::Lockable) = acquire(lck)
 Base.unlock(lck::Lockable) = release(lck)
 
 #=
-function ConcurrentUtils.try_acquire_then(f, lock::Lockable)
-    @? try_acquire(lock)
+function ConcurrentUtils.try_race_acquire_then(f, lock::Lockable)
+    @? try_race_acquire(lock)
     try
         return f()
     finally
@@ -78,11 +78,11 @@ struct ReadLockHandle{RWLock} <: Lockable
     rwlock::RWLock
 end
 
-ConcurrentUtils.try_acquire(lock::WriteLockHandle) = try_acquire_write(lock.rwlock)
+ConcurrentUtils.try_race_acquire(lock::WriteLockHandle) = try_race_acquire_write(lock.rwlock)
 ConcurrentUtils.acquire(lock::WriteLockHandle) = acquire_write(lock.rwlock)
 ConcurrentUtils.release(lock::WriteLockHandle) = release_write(lock.rwlock)
 
-ConcurrentUtils.try_acquire(lock::ReadLockHandle) = try_acquire_read(lock.rwlock)
+ConcurrentUtils.try_race_acquire(lock::ReadLockHandle) = try_race_acquire_read(lock.rwlock)
 ConcurrentUtils.acquire(lock::ReadLockHandle) = acquire_read(lock.rwlock)
 ConcurrentUtils.release(lock::ReadLockHandle) = release_read(lock.rwlock)
 

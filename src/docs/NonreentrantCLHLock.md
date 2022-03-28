@@ -14,6 +14,6 @@ version.
 ## Supported operations
 
 * [`acquire(lock::NonreentrantCLHLock; [nspins::Integer])`](@ref acquire) (`lock`)
-* [`try_acquire(lock::NonreentrantCLHLock)`](@ref try_acquire) (`trylock`): Not very
+* [`try_race_acquire(lock::NonreentrantCLHLock)`](@ref try_race_acquire) (`trylock`): Not very
   efficient but lock-free.  Fail with `AcquiredByWriterError`.
 * [`release(lock::NonreentrantCLHLock)`](@ref) (`unlock`)

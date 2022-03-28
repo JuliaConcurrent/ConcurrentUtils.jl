@@ -36,7 +36,7 @@ end
 ReentrantCLHLock() =
     ReentrantCLHLock(LockQueueNode(nothing), ntuple(_ -> 0, Val(7)), DUMMY_NODE, nothing, 0)
 
-function ConcurrentUtils.try_acquire(lock::CLHLock)
+function ConcurrentUtils.try_race_acquire(lock::CLHLock)
     pred = @atomic :monotonic lock.tail
     if !_islocked(pred)
         node = LockQueueNode(IsLocked())

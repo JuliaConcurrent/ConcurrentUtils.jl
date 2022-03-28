@@ -3,7 +3,7 @@
 Create an object that is a memoized version of `() -> code` but also acts like a `Promise`
 that is not settable.
 
-A `t = @tasklet code` supports: `t()`, `fetch(t)`, `wait(t)`, and [`try_fetch`](@ref).
+A `t = @tasklet code` supports: `t()`, `fetch(t)`, `wait(t)`, and [`try_race_fetch`](@ref).
 
 # Examples
 
@@ -15,7 +15,7 @@ julia> t = @tasklet begin
            123
        end;
 
-julia> try_fetch(t)
+julia> try_race_fetch(t)
 Try.Err: NotSetError()
 
 julia> t()

@@ -1,4 +1,4 @@
-    try_put!(promise::Promise{T}, value) -> Ok(value′::T) or Err(OccupiedError(existing::T))
+    try_race_put!(promise::Promise{T}, value) -> Ok(value′::T) or Err(OccupiedError(existing::T))
 
 Try to set a `value` in the `promise`.
 
@@ -13,9 +13,9 @@ julia> using ConcurrentUtils
 
 julia> p = Promise{Int}();
 
-julia> try_put!(p, 123)
+julia> try_race_put!(p, 123)
 Try.Ok: 123
 
-julia> try_put!(p, 456)
+julia> try_race_put!(p, 456)
 Try.Err: OccupiedError{Int64}(123)
 ```

@@ -21,10 +21,10 @@ module InternalPrelude
 include("prelude.jl")
 end  # module InternalPrelude
 
-InternalPrelude.@exported_function fetch_or!
-InternalPrelude.@exported_function try_fetch
-InternalPrelude.@exported_function try_fetch_or!
-InternalPrelude.@exported_function try_put!
+InternalPrelude.@exported_function race_fetch_or!
+InternalPrelude.@exported_function try_race_fetch
+InternalPrelude.@exported_function try_race_fetch_or!
+InternalPrelude.@exported_function try_race_put!
 
 macro once end
 macro tasklet end
@@ -38,8 +38,8 @@ struct NotAcquirableError <: InternalPrelude.Exception end
 
 InternalPrelude.@exported_function acquire
 InternalPrelude.@exported_function release
-InternalPrelude.@exported_function try_acquire
-# function try_acquire_then end
+InternalPrelude.@exported_function try_race_acquire
+# function try_race_acquire_then end
 InternalPrelude.@exported_function acquire_then
 
 #=
@@ -55,8 +55,8 @@ InternalPrelude.@exported_function acquire_write_then
 InternalPrelude.@exported_function read_write_lock
 InternalPrelude.@exported_function release_read
 InternalPrelude.@exported_function release_write
-InternalPrelude.@exported_function try_acquire_read
-InternalPrelude.@exported_function try_acquire_write
+InternalPrelude.@exported_function try_race_acquire_read
+InternalPrelude.@exported_function try_race_acquire_write
 
 InternalPrelude.@exported_function spinloop
 
@@ -87,16 +87,16 @@ using ..ConcurrentUtils:
     acquire,
     acquire_read,
     acquire_write,
-    fetch_or!,
+    race_fetch_or!,
     release,
     release_read,
     release_write,
     spinloop,
-    try_acquire_read,
-    try_acquire_write,
-    try_fetch,
-    try_fetch_or!,
-    try_put!
+    try_race_acquire_read,
+    try_race_acquire_write,
+    try_race_fetch,
+    try_race_fetch_or!,
+    try_race_put!
 
 #=
 if isfile(joinpath(@__DIR__, "config.jl"))
