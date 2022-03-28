@@ -1,0 +1,50 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - actions/trigger/docs
+    tags: '*'
+  pull_request:
+
+jobs:
+  Documenter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@v1
+      - name: Install Run.jl
+        run: julia -e 'using Pkg; pkg"add Run@0.1"'
+      - name: Install dependencies
+        run: julia -e 'using Run; Run.prepare_docs()'
+      - name: Install dependencies
+        run: |
+          using Pkg
+
+          @info "Installing Try.jl"
+          Pkg.activate(".")
+          Pkg.add(url = "https://github.com/tkf/Try.jl")
+
+          @info "Setting up docs/Project.toml"
+          Pkg.activate("docs")
+          Pkg.add([
+              PackageSpec(path = "."),
+              PackageSpec(url = "https://github.com/tkf/DocumentationOverview.jl.git"),
+          ])
+          Pkg.resolve()
+        shell: julia --color=yes {0}
+      - name: Build and deploy
+        id: build-and-deploy
+        if: |
+          github.event_name == 'push' || (
+            github.event_name == 'pull_request' &&
+            !contains(github.head_ref, 'create-pull-request/')
+          )
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.SSH_KEY }}
+        run: julia -e 'using Run; Run.docs()'
+      - name: Just build
+        if: steps.build-and-deploy.outcome == 'skipped'
+        run: julia -e 'using Run; Run.docs()'
