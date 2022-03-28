@@ -52,7 +52,13 @@ function check_concurrent_mutex(lock, ntasks, ntries)
 end
 
 function test_concurrent_mutex()
-    @testset "$(nameof(T))" for T in [ReentrantLock, ReentrantCLHLock, NonreentrantCLHLock],
+    @testset "$(nameof(T))" for T in [
+            ReentrantLock,
+            ReentrantCLHLock,
+            NonreentrantCLHLock,
+            ReentrantBackoffSpinLock,
+            NonreentrantBackoffSpinLock,
+        ],
         ntasks in [Threads.nthreads(), 64 * Threads.nthreads()]
 
         ntries = 1000
@@ -70,7 +76,13 @@ function check_try_race_acquire(lock)
 end
 
 function test_try_race_acquire()
-    @testset "$(nameof(T))" for T in [ReentrantLock]
+    @testset "$(nameof(T))" for T in [
+        ReentrantLock,
+        ReentrantCLHLock,
+        NonreentrantCLHLock,
+        ReentrantBackoffSpinLock,
+        NonreentrantBackoffSpinLock,
+    ]
         check_try_race_acquire(T())
     end
 end

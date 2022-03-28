@@ -4,6 +4,14 @@ using BenchmarkTools
 using ConcurrentUtils
 using SyncBarriers
 
+supports_nspins(
+    ::Type{T},
+) where {T<:Union{Base.AbstractLock,ConcurrentUtils.Internal.Lockable}} =
+    T <: Union{ReentrantCLHLock,NonreentrantCLHLock}
+
+supports_nspins(::Type) = error("unsupported")
+supports_nspins(lock) = supports_nspins(typeof(lock))
+
 function setup_repeat_acquire_release(
     lock;
     ntries = 2^10,
@@ -21,7 +29,7 @@ function setup_repeat_acquire_release(
             cycle!(init[i])
             local n = 0
             while true
-                if lock isa Union{ReentrantCLHLock,NonreentrantCLHLock}
+                if supports_nspins(lock)
                     acquire(lock; nspins = nspins)
                 else
                     acquire(lock)
@@ -51,19 +59,23 @@ function setup(;
     ntries = smoke ? 10 : 2^10,
     ntasks_list = default_ntasks_list(),
     nspins_list = [100, 1_000, 10_000],
-    locks = [ReentrantLock, Threads.SpinLock, ReentrantCLHLock, NonreentrantCLHLock],
+    locks = [
+        ReentrantLock,
+        Threads.SpinLock,
+        ReentrantCLHLock,
+        NonreentrantCLHLock,
+        ReentrantBackoffSpinLock,
+        NonreentrantBackoffSpinLock,
+    ],
 )
     suite = BenchmarkGroup()
-    for nspins in nspins_list
-        s1 = suite["nspins=$nspins"] = BenchmarkGroup()
-        # use_spin = (nspins isa Integer) && nspins > 0
-        for ntasks in ntasks_list
-            # use_spin && ntasks > Threads.nthreads() && continue
-            nspins_barrier = ntasks > Threads.nthreads() ? nothing : 1_000_000
-            s2 = s1["ntasks=$ntasks"] = BenchmarkGroup()
-            for T in locks
-                # !use_spin && T === Threads.SpinLock && continue
-                s2["impl=:$(nameof(T))"] = @benchmarkable(
+    for T in locks
+        s1 = suite["impl=:$(nameof(T))"] = BenchmarkGroup()
+        for nspins in (supports_nspins(T) ? nspins_list : [0])
+            s2 = s1["nspins=$nspins"] = BenchmarkGroup()
+            for ntasks in ntasks_list
+                nspins_barrier = ntasks > Threads.nthreads() ? nothing : 1_000_000
+                s2["ntasks=$ntasks"] = @benchmarkable(
                     benchmark(),
                     setup = begin
                         benchmark = setup_repeat_acquire_release(

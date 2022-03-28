@@ -36,12 +36,44 @@ end
 ReentrantCLHLock() =
     ReentrantCLHLock(LockQueueNode(nothing), ntuple(_ -> 0, Val(7)), DUMMY_NODE, nothing, 0)
 
+isreentrant(::Lockable) = false
+isreentrant(::ReentrantCLHLock) = true
+
+function handle_reentrant_acquire(lock)
+    isreentrant(lock) || return false
+    if (@atomic :monotonic lock.owner) === current_task()
+        lock.count += 1
+        return true
+    end
+    return false
+end
+
+function start_reentrant_acquire(lock)
+    isreentrant(lock) || return
+    @atomic :monotonic lock.owner = current_task()
+    lock.count = 1
+    return
+end
+
+function handle_reentrant_release(lock)
+    isreentrant(lock) || return false
+    @assert (@atomic :monotonic lock.owner) === current_task()
+    if (lock.count -= 1) > 0
+        return true
+    end
+    @atomic :monotonic lock.owner = nothing
+    return false
+end
+
 function ConcurrentUtils.try_race_acquire(lock::CLHLock)
+    handle_reentrant_acquire(lock) && return Ok(nothing)
     pred = @atomic :monotonic lock.tail
     if !_islocked(pred)
         node = LockQueueNode(IsLocked())
         _, ok = @atomicreplace(:acquire_release, :acquire, lock.tail, pred => node)
         if ok
+            start_reentrant_acquire(lock)
+            lock.current = node
             return Ok(nothing)
         end
     end
@@ -49,12 +81,7 @@ function ConcurrentUtils.try_race_acquire(lock::CLHLock)
 end
 
 function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
-    if lock isa ReentrantCLHLock
-        if (@atomic :monotonic lock.owner) === current_task()
-            lock.count += 1
-            return
-        end
-    end
+    handle_reentrant_acquire(lock) && return
 
     node = LockQueueNode(IsLocked())
     # TODO: do we need acquire for `lock.tail`?
@@ -87,22 +114,13 @@ function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
     # Main.@tlc waited
 
     @label locked
-    if lock isa ReentrantCLHLock
-        @atomic :monotonic lock.owner = current_task()
-        lock.count = 1
-    end
+    start_reentrant_acquire(lock)
     lock.current = node
     return
 end
 
 function ConcurrentUtils.release(lock::CLHLock)
-    if lock isa ReentrantCLHLock
-        @assert (@atomic :monotonic lock.owner) === current_task()
-        if (lock.count -= 1) > 0
-            return
-        end
-        @atomic :monotonic lock.owner = nothing
-    end
+    handle_reentrant_release(lock) && return
     node = lock.current
     state, ok = @atomicreplace(
         :acquire_release,

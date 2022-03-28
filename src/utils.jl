@@ -43,13 +43,31 @@ function ConcurrentUtils.spinloop()
     ccall(:jl_cpu_pause, Cvoid, ())
 end
 
+function ConcurrentUtils.spinfor(nspins)
+    for _ in oneto(nspins)
+        spinloop()
+    end
+end
+
 oneto(::Nothing) = ()
 oneto(n) = Base.OneTo(n)
+
+struct Infinity end
+const ∞ = Infinity()
+
+struct Forever end
+Base.iterate(::Forever, _state = nothing) = (nothing, nothing)
+Base.eltype(::Type{Forever}) = Nothing
+Base.IteratorSize(::Type{Forever}) = Base.IsInfinite()
+
+oneto(::Infinity) = Forever()
 
 fieldoffset_by_name(T, name) = fieldoffset(T, findfirst(==(name), fieldnames(T)))
 
 _typeof(x) = typeof(x)
 _typeof(::Type{T}) where {T} = Type{T}
+
+pad7() = ntuple(_ -> 0, Val(7))
 
 function unwrap_or_else(f, result)
     if Try.iserr(result)
