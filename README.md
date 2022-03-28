@@ -4,8 +4,8 @@
 [![CI](https://github.com/JuliaConcurrent/ConcurrentUtils.jl/actions/workflows/test.yml/badge.svg)](https://github.com/JuliaConcurrent/ConcurrentUtils.jl/actions/workflows/test.yml)
 
 ConcurrentUtils.jl provides high-level and low-level programming tools for concurrent
-computing in Julia in order to complement the tools in Julia's `Base.Threads` library.  The
-high-level APIs include:
+computing in Julia in order to complement the `Base.Threads` library.  The high-level APIs
+include:
 
 * [`Promise{T}`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.Promise):
   a memory location that holds a value of type `T` that can be set once and retrieved
