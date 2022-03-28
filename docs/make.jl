@@ -9,9 +9,10 @@ makedocs(
     # https://juliadocs.github.io/Documenter.jl/stable/lib/public/#Documenter.makedocs
 )
 
-# Documenter can also automatically deploy documentation to gh-pages.
-# See "Hosting Documentation" and deploydocs() in the Documenter manual
-# for more information.
-#=deploydocs(
-    repo = "<repository url>"
-)=#
+deploydocs(
+    repo = "JuliaConcurrent/ConcurrentUtils.jl",
+    devbranch = "main",
+    push_preview = true,
+    # Ref:
+    # https://juliadocs.github.io/Documenter.jl/stable/lib/public/#Documenter.deploydocs
+)
