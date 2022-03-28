@@ -8,7 +8,7 @@ computing in Julia in order to complement the tools in Julia's `Base.Threads` li
 high-level APIs include:
 
 * [`Promise{T}`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.Promise):
-  a memory location that holds a value of type T that can be set once and retrieved
+  a memory location that holds a value of type `T` that can be set once and retrieved
   asynchronously.
 * [`@tasklet code`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.@tasklet):
   a `Promise`-like memoized thunk.
