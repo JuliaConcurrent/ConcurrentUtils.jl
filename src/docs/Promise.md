@@ -28,6 +28,29 @@ julia> try_race_put!(p, 456)
 Try.Err: OccupiedError{Int64}(123)
 ```
 
+## Memory ordering
+
+An event that retrieves or waits for a value from a `promise` establishes a happened-before
+edge from the event that have set the value to the `promise`.  Invocations of the API that
+includes an event that sets a value to a `promise` include:
+
+* `put!(promise, value)` that does not throw.
+* `try_race_put!(promise, value)` that returns an `Ok` result.
+* `try_race_fetch_or!(thunk, promise)` that calls `thunk` (and hance returns an `Err`).
+* `race_fetch_or!(thunk, promise)` that calls `thunk`.
+
+(The invocation `thunk()` is sequenced-before the event that sets the value.)
+
+Invocations of the API that includes an event that retrieves or waits for a value from a
+`promise` include:
+
+* `fetch(promise)`
+* `wait(promise)`
+* `try_race_fetch(promise)` that returns an `Ok` result.
+* `try_race_fetch_or!(thunk, promise)` that does not call `thunk` (and hance returns an
+  `Ok`)
+* `race_fetch_or!(thunk, promise)` that does not call `thunk`
+
 ## Supported operations
 
 A `promise::Promise{T}` supports the following operations:

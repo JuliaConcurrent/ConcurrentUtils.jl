@@ -11,6 +11,11 @@ Hagersten (1994) with a fallback to "cooperatively" wait in the scheduler instea
 spinning (hence "spinnable").  See [`NonreentrantCLHLock`](@ref) that provides a
 non-reentrant version.
 
+## Memory ordering
+
+A `release` invocation on a `lock` establishes happened-before edges to subsequent
+invocations of `acquire` and `try_race_acquire` that returns an `Ok` on the same `lock`.
+
 ## Supported operations
 
 * [`acquire(lock::ReentrantCLHLock; [nspins::Integer])`](@ref acquire) (`lock`)

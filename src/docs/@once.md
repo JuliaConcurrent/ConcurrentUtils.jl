@@ -5,6 +5,11 @@ result of the first evaluation whenever the same location of the code is evaluat
 
 Note that `code` does not have access to the local variables.
 
+# Memory ordering
+
+Events that follow the run-time (as opposed to macro expansion-time) evaluation of `@once
+code` in the same Julia task have happened-before edge from the events in `code`.
+
 # Examples
 
 ```julia
