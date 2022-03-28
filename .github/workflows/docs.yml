@@ -17,8 +17,6 @@ jobs:
       - name: Install Run.jl
         run: julia -e 'using Pkg; pkg"add Run@0.1"'
       - name: Install dependencies
-        run: julia -e 'using Run; Run.prepare_docs()'
-      - name: Install dependencies
         run: |
           using Pkg
 
