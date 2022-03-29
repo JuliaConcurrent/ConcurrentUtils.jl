@@ -4,7 +4,7 @@ using BenchmarkTools
 using ConcurrentUtils
 using SyncBarriers
 
-include("../../../examples/raynal_read_write_lock.jl")
+include("raynal_read_write_lock.jl")
 
 raynal_read_write_lock() = read_write_lock(RaynalReadWriteLock())
 
