@@ -55,6 +55,8 @@ DocumentationOverview.table_md(
     :[
         ReentrantCLHLock,
         NonreentrantCLHLock,
+        ReentrantBackoffSpinLock,
+        NonreentrantBackoffSpinLock,
         TaskObliviousLock,
         read_write_lock,
         acquire,
@@ -70,6 +72,8 @@ DocumentationOverview.table_md(
 ```@docs
 ReentrantCLHLock
 NonreentrantCLHLock
+ReentrantBackoffSpinLock
+NonreentrantBackoffSpinLock
 TaskObliviousLock
 read_write_lock
 acquire
