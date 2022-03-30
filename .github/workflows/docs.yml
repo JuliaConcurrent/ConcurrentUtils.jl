@@ -25,7 +25,6 @@ jobs:
           Pkg.add([
               PackageSpec(url = "https://github.com/tkf/Try.jl.git"),
               PackageSpec(path = "."),
-              PackageSpec(url = "https://github.com/tkf/DocumentationOverview.jl.git"),
           ])
           Pkg.resolve()
         shell: julia --color=yes {0}
