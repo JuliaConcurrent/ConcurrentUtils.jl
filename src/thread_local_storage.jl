@@ -46,3 +46,6 @@ function getstorages!(tls::ThreadLocalStorage{T}) where {T}
 end
 
 Base.getindex(tls::ThreadLocalStorage) = getstorages!(tls)[Threads.threadid()]
+
+
+const THREAD_LOCAL_RNG = ThreadLocalStorage(Xoshiro)

@@ -78,6 +78,7 @@ module Internal
 
 using Core.Intrinsics: atomic_fence
 using Core: OpaqueClosure
+using Random: Xoshiro
 
 import UnsafeAtomics: UnsafeAtomics, acq_rel
 using ExternalDocstrings: @define_docstrings

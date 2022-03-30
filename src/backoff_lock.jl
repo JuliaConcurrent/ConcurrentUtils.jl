@@ -6,8 +6,7 @@ end
 function (backoff::Backoff)()
     limit = backoff.limit
     backoff.limit = min(backoff.maxdelay, 2limit)
-    # TODO: don't use TaskLocalRNG
-    delay = rand(1:limit)
+    delay = rand(THREAD_LOCAL_RNG[], 1:limit)
     spinfor(delay)
 end
 
