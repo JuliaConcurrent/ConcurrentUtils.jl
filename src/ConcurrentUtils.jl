@@ -41,6 +41,7 @@ struct TooManyTries <: InternalPrelude.Exception end
 
 InternalPrelude.@exported_function acquire
 InternalPrelude.@exported_function release
+InternalPrelude.@exported_function race_acquire
 InternalPrelude.@exported_function try_race_acquire
 # function try_race_acquire_then end
 InternalPrelude.@exported_function acquire_then
@@ -92,6 +93,7 @@ using ..ConcurrentUtils:
     acquire,
     acquire_read,
     acquire_write,
+    race_acquire,
     race_fetch_or!,
     release,
     release_read,

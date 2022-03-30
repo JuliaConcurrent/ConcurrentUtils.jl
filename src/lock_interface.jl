@@ -31,7 +31,9 @@ end
 
 abstract type Lockable end
 
-Base.trylock(lck::Lockable) = Try.isok(try_race_acquire(lck))
+ConcurrentUtils.race_acquire(lock) = Try.isok(try_race_acquire(lock))
+
+Base.trylock(lck::Lockable) = race_acquire(lck)
 Base.lock(lck::Lockable) = acquire(lck)
 Base.unlock(lck::Lockable) = release(lck)
 

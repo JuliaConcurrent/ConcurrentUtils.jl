@@ -70,8 +70,14 @@ end
 function check_try_race_acquire(lock)
     acquire(lock)
     @test fetch(Threads.@spawn try_race_acquire(lock)) == Err(NotAcquirableError())
+    @test !fetch(Threads.@spawn race_acquire(lock))
+    @test !fetch(Threads.@spawn trylock(lock))
     release(lock)
     @test try_race_acquire(lock) == Ok(nothing)
+    release(lock)
+    @test race_acquire(lock)
+    release(lock)
+    @test trylock(lock)
     release(lock)
 end
 

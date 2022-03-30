@@ -62,6 +62,7 @@ DocumentationOverview.table_md(
         acquire,
         release,
         try_race_acquire,
+        race_acquire,
         acquire_then,
     ],
     namespace = ConcurrentUtils,
@@ -79,6 +80,7 @@ read_write_lock
 acquire
 release
 try_race_acquire
+race_acquire
 acquire_then
 ```
 
