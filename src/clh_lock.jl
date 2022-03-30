@@ -101,7 +101,8 @@ function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
     end
 
     task = current_task()
-    # TODO: do we need acquire for `pred.state`?
+    # The acquire ordering is for `acquire(lock)` semantics. The release ordering is for
+    # task's fields:
     state, ok = @atomicreplace(:acquire_release, :acquire, pred.state, IsLocked() => task)
     if ok
         @assert state isa IsLocked
@@ -122,6 +123,8 @@ end
 function ConcurrentUtils.release(lock::CLHLock)
     handle_reentrant_release(lock) && return
     node = lock.current
+    # The release ordering is for `release(lock)` semantics. The acquire ordering is for
+    # task's fields:
     state, ok = @atomicreplace(
         :acquire_release,
         :acquire,
