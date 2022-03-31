@@ -48,7 +48,7 @@ function ConcurrentUtils.try_race_acquire(
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
     nspins = -∞,
-    nbackoffs = -∞,
+    ntries = -∞,
 )
     handle_reentrant_acquire(lock) && return Ok(nothing)
 
@@ -71,11 +71,11 @@ function ConcurrentUtils.try_race_acquire(
         if (@atomicswap :acquire lock.state = LCK_HELD) === LCK_AVAILABLE
             @goto locked
         end
-        nb < nbackoffs || return Err(TooManyBackoffs(nt, nb))
+        nb < ntries || return Err(TooManyTries(nt, nb))
         nt += backoff()
         nb += 1
         while islocked(lock)
-            nt < nspins || return Err(TooManyBackoffs(nt, nb))
+            nt < nspins || return Err(TooManyTries(nt, nb))
             spinloop()
             nt += 1
         end
@@ -91,7 +91,7 @@ function ConcurrentUtils.acquire(
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
 )
-    try_race_acquire(lock; mindelay, maxdelay, nspins = ∞, nbackoffs = ∞)::Ok
+    try_race_acquire(lock; mindelay, maxdelay, nspins = ∞, ntries = ∞)::Ok
     return
 end
 

@@ -112,11 +112,11 @@ function check_concurrent_try_race_acquire(tryacq, lock, ntasks, ntries)
     return ref[], atomic[], foldl(append!, unsafe_takestorages!(errs))
 end
 
-function get_nbackoffs(@nospecialize(e))
+function get_ntries(@nospecialize(e))
     if e isa TooManySpins
         -1
-    elseif e isa TooManyBackoffs
-        e.nbackoffs
+    elseif e isa TooManyTries
+        e.ntries
     else
         typemax(Int)
     end
@@ -135,19 +135,19 @@ function test_concurrent_try_race_acquire()
                     end
                 @test actual == desired
 
-                @test filter(e -> !(e isa Union{TooManySpins,TooManyBackoffs}), errs) == []
-                @test all(<=(0), map(get_nbackoffs, errs))
+                @test filter(e -> !(e isa Union{TooManySpins,TooManyTries}), errs) == []
+                @test all(<=(0), map(get_ntries, errs))
             end
 
-            @testset "nbackoffs = 3" begin
+            @testset "#backoffs = 3" begin
                 actual, desired, errs =
                     check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
-                        try_race_acquire(lock; nspins = 10000, nbackoffs = 3)
+                        try_race_acquire(lock; nspins = 10000, ntries = 3)
                     end
                 @test actual == desired
 
-                @test filter(e -> !(e isa Union{TooManySpins,TooManyBackoffs}), errs) == []
-                @test all(<=(3), map(get_nbackoffs, errs))
+                @test filter(e -> !(e isa Union{TooManySpins,TooManyTries}), errs) == []
+                @test all(<=(3), map(get_ntries, errs))
             end
         end
     end

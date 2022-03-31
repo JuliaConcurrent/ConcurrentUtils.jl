@@ -10,13 +10,13 @@ export
     NotAcquirableError,
     NotSetError,
     OccupiedError,
-    TooManyBackoffs,
     TooManySpins,
     Promise,
     ReentrantBackoffSpinLock,
     ReentrantCLHLock,
     TaskObliviousLock,
-    ThreadLocalStorage
+    ThreadLocalStorage,
+    TooManyTries
 
 export Try, Err, Ok
 using Try: Try, Ok, Err
@@ -40,9 +40,9 @@ end
 struct NotSetError <: InternalPrelude.Exception end
 struct NotAcquirableError <: InternalPrelude.Exception end
 struct TooManySpins <: InternalPrelude.Exception end
-struct TooManyBackoffs <: InternalPrelude.Exception
+struct TooManyTries <: InternalPrelude.Exception
     nspins::Int
-    nbackoffs::Int
+    ntries::Int
 end
 
 InternalPrelude.@exported_function acquire
@@ -98,8 +98,8 @@ using ..ConcurrentUtils:
     NotAcquirableError,
     NotSetError,
     OccupiedError,
-    TooManyBackoffs,
     TooManySpins,
+    TooManyTries,
     acquire,
     acquire_read,
     acquire_write,
