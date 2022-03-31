@@ -8,6 +8,7 @@ function (backoff::Backoff)()
     backoff.limit = min(backoff.maxdelay, 2limit)
     delay = rand(THREAD_LOCAL_RNG[], 1:limit)
     spinfor(delay)
+    return delay
 end
 
 abstract type BackoffSpinLock <: Lockable end
@@ -41,13 +42,48 @@ isreentrant(::ReentrantBackoffSpinLock) = true
 
 Base.islocked(lock::BackoffSpinLock) = (@atomic :monotonic lock.state) !== LCK_AVAILABLE
 
-function ConcurrentUtils.try_race_acquire(lock::BackoffSpinLock)
+function ConcurrentUtils.try_race_acquire(
+    lock::BackoffSpinLock;
+    mindelay = lock.mindelay,
+    maxdelay = lock.maxdelay,
+    ntries = -∞,
+    nbackoffs = -∞,
+)
     handle_reentrant_acquire(lock) && return Ok(nothing)
+
     if !islocked(lock) && (@atomicswap :acquire lock.state = LCK_HELD) === LCK_AVAILABLE
-        start_reentrant_acquire(lock)
-        return Ok(nothing)
+        @goto locked
     end
-    return Err(NotAcquirableError())
+
+    local nt::Int = 0
+    while true
+        # Check this first so that no loop is executed if `ntries == -∞`
+        nt < ntries || return Err(TooManyTries())
+        islocked(lock) && break
+        spinloop()
+        nt += 1
+    end
+
+    # TODO: check that allocation of `backoff` is eliminated
+    local nb::Int = 0
+    backoff = Backoff(max(1, mindelay), max(1, maxdelay))
+    while true
+        if (@atomicswap :acquire lock.state = LCK_HELD) === LCK_AVAILABLE
+            @goto locked
+        end
+        nb < nbackoffs || return Err(TooManyBackoffs(nt, nb))
+        nt += backoff()
+        nb += 1
+        while islocked(lock)
+            nt < ntries || return Err(TooManyBackoffs(nt, nb))
+            spinloop()
+            nt += 1
+        end
+    end
+
+    @label locked
+    start_reentrant_acquire(lock)
+    return Ok(nothing)
 end
 
 function ConcurrentUtils.acquire(
@@ -55,25 +91,8 @@ function ConcurrentUtils.acquire(
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
 )
-    handle_reentrant_acquire(lock) && return
-
-    if !islocked(lock) && (@atomicswap :acquire lock.state = LCK_HELD) === LCK_AVAILABLE
-        @goto locked
-    end
-
-    backoff = Backoff(max(1, mindelay), max(1, maxdelay))
-    while true
-        while islocked(lock)
-            spinloop()
-        end
-        backoff()
-        if (@atomicswap :acquire lock.state = LCK_HELD) === LCK_AVAILABLE
-            @goto locked
-        end
-    end
-
-    @label locked
-    start_reentrant_acquire(lock)
+    # TODO: check that the compiler knows it's always `Ok`
+    try_race_acquire(lock; mindelay, maxdelay, ntries = ∞, nbackoffs = ∞)::Ok
     return
 end
 
