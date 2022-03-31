@@ -10,7 +10,6 @@ export
     NotAcquirableError,
     NotSetError,
     OccupiedError,
-    TooManySpins,
     Promise,
     ReentrantBackoffSpinLock,
     ReentrantCLHLock,
@@ -39,7 +38,6 @@ end
 
 struct NotSetError <: InternalPrelude.Exception end
 struct NotAcquirableError <: InternalPrelude.Exception end
-struct TooManySpins <: InternalPrelude.Exception end
 struct TooManyTries <: InternalPrelude.Exception
     nspins::Int
     ntries::Int
@@ -98,7 +96,6 @@ using ..ConcurrentUtils:
     NotAcquirableError,
     NotSetError,
     OccupiedError,
-    TooManySpins,
     TooManyTries,
     acquire,
     acquire_read,

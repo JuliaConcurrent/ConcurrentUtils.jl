@@ -113,9 +113,7 @@ function check_concurrent_try_race_acquire(tryacq, lock, ntasks, ntries)
 end
 
 function get_ntries(@nospecialize(e))
-    if e isa TooManySpins
-        -1
-    elseif e isa TooManyTries
+    if e isa TooManyTries
         e.ntries
     else
         typemax(Int)
@@ -135,7 +133,7 @@ function test_concurrent_try_race_acquire()
                     end
                 @test actual == desired
 
-                @test filter(e -> !(e isa Union{TooManySpins,TooManyTries}), errs) == []
+                @test filter(e -> !(e isa TooManyTries), errs) == []
                 @test all(<=(0), map(get_ntries, errs))
             end
 
@@ -146,7 +144,7 @@ function test_concurrent_try_race_acquire()
                     end
                 @test actual == desired
 
-                @test filter(e -> !(e isa Union{TooManySpins,TooManyTries}), errs) == []
+                @test filter(e -> !(e isa TooManyTries), errs) == []
                 @test all(<=(3), map(get_ntries, errs))
             end
         end

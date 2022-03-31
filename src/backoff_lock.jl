@@ -59,7 +59,7 @@ function ConcurrentUtils.try_race_acquire(
     local nt::Int = 0
     while true
         # Check this first so that no loop is executed if `nspins == -∞`
-        nt < nspins || return Err(TooManySpins())
+        nt < nspins || return Err(TooManyTries(nt, 0))
         islocked(lock) || break
         spinloop()
         nt += 1
