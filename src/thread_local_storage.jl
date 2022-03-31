@@ -1,5 +1,4 @@
 mutable struct ThreadLocalStorage{T,Factory}
-    # TODO: pad `T`
     @const factory::Factory
     @atomic storages::Vector{T}
     @const cond::Threads.Condition
@@ -17,12 +16,16 @@ function ThreadLocalStorage(factory)
     )
 end
 
-#=
-function unsafe_empty!(tls::ThreadLocalStorage)
-    empty!(tls.storages)
+function ConcurrentUtils.unsafe_takestorages!(tls::ThreadLocalStorage{T}) where {T}
+    storages = @atomic :monotonic tls.storages
+    @atomic :monotonic tls.storages = T[]
+    return storages
+end
+
+function Base.empty!(tls::ThreadLocalStorage{T}) where {T}
+    @atomic :release tls.storages = T[]
     return tls
 end
-=#
 
 function getstorages!(tls::ThreadLocalStorage{T}) where {T}
     storages = @atomic :acquire tls.storages

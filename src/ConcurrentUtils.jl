@@ -62,6 +62,8 @@ InternalPrelude.@exported_function release_write
 InternalPrelude.@exported_function try_race_acquire_read
 InternalPrelude.@exported_function try_race_acquire_write
 
+InternalPrelude.@exported_function unsafe_takestorages!
+
 InternalPrelude.@exported_function spinloop
 InternalPrelude.@exported_function spinfor
 
