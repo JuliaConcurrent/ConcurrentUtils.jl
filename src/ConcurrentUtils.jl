@@ -10,6 +10,8 @@ export
     NotAcquirableError,
     NotSetError,
     OccupiedError,
+    TooManyBackoffs,
+    TooManyTries,
     Promise,
     ReentrantBackoffSpinLock,
     ReentrantCLHLock,
@@ -38,6 +40,10 @@ end
 struct NotSetError <: InternalPrelude.Exception end
 struct NotAcquirableError <: InternalPrelude.Exception end
 struct TooManyTries <: InternalPrelude.Exception end
+struct TooManyBackoffs <: InternalPrelude.Exception
+    nspins::Int
+    nbackoffs::Int
+end
 
 InternalPrelude.@exported_function acquire
 InternalPrelude.@exported_function release
@@ -92,6 +98,7 @@ using ..ConcurrentUtils:
     NotAcquirableError,
     NotSetError,
     OccupiedError,
+    TooManyBackoffs,
     TooManyTries,
     acquire,
     acquire_read,

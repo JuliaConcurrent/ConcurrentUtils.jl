@@ -54,6 +54,7 @@ oneto(n) = Base.OneTo(n)
 
 struct Infinity end
 const ∞ = Infinity()
+Base.:<(::Int, ::Infinity) = true
 
 struct Forever end
 Base.iterate(::Forever, _state = nothing) = (nothing, nothing)
@@ -61,6 +62,10 @@ Base.eltype(::Type{Forever}) = Nothing
 Base.IteratorSize(::Type{Forever}) = Base.IsInfinite()
 
 oneto(::Infinity) = Forever()
+
+struct NegativeInfinity end
+Base.:-(::Infinity) = NegativeInfinity()
+Base.:<(::Int, ::NegativeInfinity) = false
 
 fieldoffset_by_name(T, name) = fieldoffset(T, findfirst(==(name), fieldnames(T)))
 

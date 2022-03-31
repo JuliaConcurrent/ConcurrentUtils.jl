@@ -69,7 +69,7 @@ end
 
 function check_try_race_acquire(lock)
     acquire(lock)
-    @test fetch(Threads.@spawn try_race_acquire(lock)) == Err(NotAcquirableError())
+    @test fetch(Threads.@spawn try_race_acquire(lock)) isa Err
     @test !fetch(Threads.@spawn race_acquire(lock))
     @test !fetch(Threads.@spawn trylock(lock))
     release(lock)
@@ -90,6 +90,50 @@ function test_try_race_acquire()
         NonreentrantBackoffSpinLock,
     ]
         check_try_race_acquire(T())
+    end
+end
+
+function check_concurrent_try_race_acquire(tryacq, lock, ntasks, ntries)
+    # TODO: accumulate Err results
+    atomic = Threads.Atomic{Int}(0)
+    ref = Ref(0)
+    @sync for _ in 1:ntasks
+        Threads.@spawn for _ in 1:ntries
+            result = tryacq(lock)
+            if Try.isok(result)
+                ref[] += 1
+                release(lock)
+                Threads.atomic_add!(atomic, 1)
+            end
+        end
+    end
+    return ref[], atomic[]
+end
+
+function test_concurrent_try_race_acquire()
+    @testset for ntasks in [Threads.nthreads(), 64 * Threads.nthreads()]
+        ntries = 1000
+
+        backofflocks = [ReentrantBackoffSpinLock, NonreentrantBackoffSpinLock]
+        @testset "$(nameof(T))" for T in backofflocks
+            @testset "no backoffs" begin
+                actual, desired =
+                    check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
+                        # TODO: check that there's no `TooManyBackoffs` with `.nbackoffs > 0`
+                        try_race_acquire(lock; ntries = 10)
+                    end
+                @test actual == desired
+            end
+
+            @testset "nbackoffs = 3" begin
+                actual, desired =
+                    check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
+                        # TODO: check that there's no `TooManyBackoffs` with `.nbackoffs > 3`
+                        try_race_acquire(lock; ntries = 10000, nbackoffs = 3)
+                    end
+                @test actual == desired
+            end
+        end
     end
 end
 
