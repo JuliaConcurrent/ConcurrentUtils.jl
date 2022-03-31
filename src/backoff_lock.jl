@@ -3,7 +3,8 @@ mutable struct Backoff
     @const maxdelay::Int
 end
 
-function (backoff::Backoff)()
+# Avoid introducing a function boundaries and move `backoff` to stack (or registers).
+@inline function (backoff::Backoff)()
     limit = backoff.limit
     backoff.limit = min(backoff.maxdelay, 2limit)
     delay = rand(THREAD_LOCAL_RNG[], 1:limit)
@@ -64,7 +65,6 @@ function ConcurrentUtils.try_race_acquire(
         nt += 1
     end
 
-    # TODO: check that allocation of `backoff` is eliminated
     local nb::Int = 0
     backoff = Backoff(max(1, mindelay), max(1, maxdelay))
     while true
@@ -91,7 +91,6 @@ function ConcurrentUtils.acquire(
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
 )
-    # TODO: check that the compiler knows it's always `Ok`
     try_race_acquire(lock; mindelay, maxdelay, ntries = ∞, nbackoffs = ∞)::Ok
     return
 end
