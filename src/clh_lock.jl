@@ -65,19 +65,33 @@ function handle_reentrant_release(lock)
     return false
 end
 
-function ConcurrentUtils.try_race_acquire(lock::CLHLock)
+function ConcurrentUtils.try_race_acquire(lock::CLHLock; nspins = -∞)
     handle_reentrant_acquire(lock) && return Ok(nothing)
     pred = @atomic :monotonic lock.tail
-    if !_islocked(pred)
-        node = LockQueueNode(IsLocked())
+    local ns::Int = 0
+    while _islocked(pred)
+        # Check this first so that no loop is executed if `nspins == -∞`
+        ns < nspins || return Err(TooManySpins())
+        spinloop()
+        ns += 1
+    end
+
+    node = LockQueueNode(IsLocked())
+    while true
         _, ok = @atomicreplace(:acquire_release, :acquire, lock.tail, pred => node)
         if ok
             start_reentrant_acquire(lock)
             lock.current = node
             return Ok(nothing)
         end
+
+        pred = @atomic :monotonic lock.tail
+        while _islocked(pred)
+            ns < nspins || return Err(TooManySpins())
+            spinloop()
+            ns += 1
+        end
     end
-    return Err(NotAcquirableError())
 end
 
 function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
