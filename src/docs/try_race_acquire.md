@@ -15,5 +15,5 @@ julia> try_race_acquire(lock)
 Try.Ok: nothing
 
 julia> try_race_acquire(lock)
-Try.Err: NotAcquirableError()
+Try.Err: TooManySpins()
 ```
