@@ -7,8 +7,8 @@ Return the read handle `rlock` and the write handle `wlock` of a read-write lock
 Supported operations:
 
 * [`acquire(rlock)`](@ref acquire) (`lock`)
-* [`try_race_acquire(rlock; [ntries::Integer])`](@ref try_race_acquire) (`trylock`): Not very
-  efficient but lock-free.  Fail with `AcquiredByWriterError` or `TooManyTries`.
+* [`try_race_acquire(rlock; [nspins::Integer])`](@ref try_race_acquire) (`trylock`): Not very
+  efficient but lock-free.  Fail with `AcquiredByWriterError` or `TooManySpins`.
 * [`release(rlock)`](@ref) (`unlock`)
 * [`acquire(wlock)`](@ref acquire) (`lock`)
 * [`try_race_acquire(wlock)`](@ref try_race_acquire) (`trylock`): Fail with `NotAcquirableError`.

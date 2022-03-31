@@ -113,7 +113,7 @@ function check_concurrent_try_race_acquire(tryacq, lock, ntasks, ntries)
 end
 
 function get_nbackoffs(@nospecialize(e))
-    if e isa TooManyTries
+    if e isa TooManySpins
         -1
     elseif e isa TooManyBackoffs
         e.nbackoffs
@@ -131,22 +131,22 @@ function test_concurrent_try_race_acquire()
             @testset "no backoffs" begin
                 actual, desired, errs =
                     check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
-                        try_race_acquire(lock; ntries = 10)
+                        try_race_acquire(lock; nspins = 10)
                     end
                 @test actual == desired
 
-                @test filter(e -> !(e isa Union{TooManyTries,TooManyBackoffs}), errs) == []
+                @test filter(e -> !(e isa Union{TooManySpins,TooManyBackoffs}), errs) == []
                 @test all(<=(0), map(get_nbackoffs, errs))
             end
 
             @testset "nbackoffs = 3" begin
                 actual, desired, errs =
                     check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
-                        try_race_acquire(lock; ntries = 10000, nbackoffs = 3)
+                        try_race_acquire(lock; nspins = 10000, nbackoffs = 3)
                     end
                 @test actual == desired
 
-                @test filter(e -> !(e isa Union{TooManyTries,TooManyBackoffs}), errs) == []
+                @test filter(e -> !(e isa Union{TooManySpins,TooManyBackoffs}), errs) == []
                 @test all(<=(3), map(get_nbackoffs, errs))
             end
         end

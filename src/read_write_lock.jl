@@ -23,9 +23,9 @@ function ReadWriteLock()
 end
 
 # Not very efficient but lock-free
-function ConcurrentUtils.try_race_acquire_read(rwlock::ReadWriteLock; ntries::Integer = 128)
+function ConcurrentUtils.try_race_acquire_read(rwlock::ReadWriteLock; nspins::Integer = 128)
     old = @atomic :monotonic rwlock.nreaders_and_writelock
-    for _ in 1:ntries
+    for _ in 1:nspins
         if iszero(old & WRITELOCK_MASK)
             # Try to acquire reader lock without the responsibility to receive or send the
             # notification:
@@ -40,7 +40,7 @@ function ConcurrentUtils.try_race_acquire_read(rwlock::ReadWriteLock; ntries::In
             return Err(AcquiredByWriterError())
         end
     end
-    return Err(TooManyTries())
+    return Err(TooManySpins())
 end
 
 function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)

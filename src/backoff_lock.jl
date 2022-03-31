@@ -47,7 +47,7 @@ function ConcurrentUtils.try_race_acquire(
     lock::BackoffSpinLock;
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
-    ntries = -∞,
+    nspins = -∞,
     nbackoffs = -∞,
 )
     handle_reentrant_acquire(lock) && return Ok(nothing)
@@ -58,8 +58,8 @@ function ConcurrentUtils.try_race_acquire(
 
     local nt::Int = 0
     while true
-        # Check this first so that no loop is executed if `ntries == -∞`
-        nt < ntries || return Err(TooManyTries())
+        # Check this first so that no loop is executed if `nspins == -∞`
+        nt < nspins || return Err(TooManySpins())
         islocked(lock) || break
         spinloop()
         nt += 1
@@ -75,7 +75,7 @@ function ConcurrentUtils.try_race_acquire(
         nt += backoff()
         nb += 1
         while islocked(lock)
-            nt < ntries || return Err(TooManyBackoffs(nt, nb))
+            nt < nspins || return Err(TooManyBackoffs(nt, nb))
             spinloop()
             nt += 1
         end
@@ -91,7 +91,7 @@ function ConcurrentUtils.acquire(
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
 )
-    try_race_acquire(lock; mindelay, maxdelay, ntries = ∞, nbackoffs = ∞)::Ok
+    try_race_acquire(lock; mindelay, maxdelay, nspins = ∞, nbackoffs = ∞)::Ok
     return
 end
 
