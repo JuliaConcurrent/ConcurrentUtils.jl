@@ -94,7 +94,7 @@ function test_try_race_acquire()
 end
 
 function check_concurrent_try_race_acquire(tryacq, lock, ntasks, ntries)
-    # TODO: accumulate Err results
+    errs = ThreadLocalStorage(Vector{Any})
     atomic = Threads.Atomic{Int}(0)
     ref = Ref(0)
     @sync for _ in 1:ntasks
@@ -104,10 +104,22 @@ function check_concurrent_try_race_acquire(tryacq, lock, ntasks, ntries)
                 ref[] += 1
                 release(lock)
                 Threads.atomic_add!(atomic, 1)
+            else
+                push!(errs[], Try.unwrap_err(result))
             end
         end
     end
-    return ref[], atomic[]
+    return ref[], atomic[], foldl(append!, unsafe_takestorages!(errs))
+end
+
+function get_nbackoffs(@nospecialize(e))
+    if e isa TooManyTries
+        -1
+    elseif e isa TooManyBackoffs
+        e.nbackoffs
+    else
+        typemax(Int)
+    end
 end
 
 function test_concurrent_try_race_acquire()
@@ -117,21 +129,25 @@ function test_concurrent_try_race_acquire()
         backofflocks = [ReentrantBackoffSpinLock, NonreentrantBackoffSpinLock]
         @testset "$(nameof(T))" for T in backofflocks
             @testset "no backoffs" begin
-                actual, desired =
+                actual, desired, errs =
                     check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
-                        # TODO: check that there's no `TooManyBackoffs` with `.nbackoffs > 0`
                         try_race_acquire(lock; ntries = 10)
                     end
                 @test actual == desired
+
+                @test filter(e -> !(e isa Union{TooManyTries,TooManyBackoffs}), errs) == []
+                @test all(<=(0), map(get_nbackoffs, errs))
             end
 
             @testset "nbackoffs = 3" begin
-                actual, desired =
+                actual, desired, errs =
                     check_concurrent_try_race_acquire(T(), ntasks, ntries) do lock
-                        # TODO: check that there's no `TooManyBackoffs` with `.nbackoffs > 3`
                         try_race_acquire(lock; ntries = 10000, nbackoffs = 3)
                     end
                 @test actual == desired
+
+                @test filter(e -> !(e isa Union{TooManyTries,TooManyBackoffs}), errs) == []
+                @test all(<=(3), map(get_nbackoffs, errs))
             end
         end
     end
