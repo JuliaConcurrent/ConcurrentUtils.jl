@@ -11,5 +11,6 @@ include("test_locks.jl")
 include("test_read_write_lock.jl")
 
 include("test_benchmarks.jl")
+include("test_doctest.jl")
 
 end  # module ConcurrentUtilsTests
