@@ -59,7 +59,7 @@ function ConcurrentUtils.try_race_acquire(
     while true
         # Check this first so that no loop is executed if `ntries == -∞`
         nt < ntries || return Err(TooManyTries())
-        islocked(lock) && break
+        islocked(lock) || break
         spinloop()
         nt += 1
     end
