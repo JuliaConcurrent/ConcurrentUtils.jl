@@ -35,13 +35,15 @@ function getstorages!(tls::ThreadLocalStorage{T}) where {T}
         if n >= Threads.nthreads()
             return storages
         end
-        resize!(storages, Threads.nthreads())
+        newstorages = similar(storages, Threads.nthreads())
+        copyto!(newstorages, storages)
         local factory = tls.factory
         for i in n+1:Threads.nthreads()
             local value = factory()::T
-            storages[i] = value
+            newstorages[i] = value
         end
-        return storages
+        @atomic :release tls.storages = newstorages
+        return newstorages
     end
 end
 
