@@ -49,6 +49,7 @@ InternalPrelude.@exported_function race_acquire
 InternalPrelude.@exported_function try_race_acquire
 # function try_race_acquire_then end
 InternalPrelude.@exported_function acquire_then
+InternalPrelude.@exported_function lock_supports_nspins
 
 #=
 InternalPrelude.@exported_function isacquirable

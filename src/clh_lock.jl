@@ -97,6 +97,8 @@ function ConcurrentUtils.try_race_acquire(lock::CLHLock; nspins = -∞, ntries =
     end
 end
 
+ConcurrentUtils.lock_supports_nspins(::Type{<:CLHLock}) = true
+
 function Base.lock(lock::CLHLock; nspins = nothing)
     handle_reentrant_acquire(lock) && return
 

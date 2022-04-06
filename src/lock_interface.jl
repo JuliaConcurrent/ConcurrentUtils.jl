@@ -27,6 +27,15 @@ function ConcurrentUtils.acquire_then(f, lock; acquire_options...)
     end
 end
 
+ConcurrentUtils.lock_supports_nspins(::Type{<:Base.AbstractLock}) = false
+
+ConcurrentUtils.lock_supports_nspins(lock) =
+    ConcurrentUtils.lock_supports_nspins(typeof(lock))
+
+need_lock_object() = error("need lock type or object")
+ConcurrentUtils.lock_supports_nspins(::Type{Union{}}) = need_lock_object()
+ConcurrentUtils.lock_supports_nspins(::Type) = need_lock_object()
+
 ###
 ### Main ConcurrentUtils' lock interface
 ###

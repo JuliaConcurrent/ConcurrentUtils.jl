@@ -4,14 +4,6 @@ using BenchmarkTools
 using ConcurrentUtils
 using SyncBarriers
 
-supports_nspins(
-    ::Type{T},
-) where {T<:Union{Base.AbstractLock,ConcurrentUtils.Internal.Lockable}} =
-    T <: Union{ReentrantCLHLock,NonreentrantCLHLock}
-
-supports_nspins(::Type) = error("unsupported")
-supports_nspins(lock) = supports_nspins(typeof(lock))
-
 function setup_repeat_acquire_release(
     lock;
     ntries = 2^10,
@@ -29,7 +21,7 @@ function setup_repeat_acquire_release(
             cycle!(init[i])
             local n = 0
             while true
-                if supports_nspins(lock)
+                if lock_supports_nspins(lock)
                     acquire(lock; nspins = nspins)
                 else
                     acquire(lock)
@@ -71,7 +63,7 @@ function setup(;
     suite = BenchmarkGroup()
     for T in locks
         s1 = suite["impl=:$(nameof(T))"] = BenchmarkGroup()
-        for nspins in (supports_nspins(T) ? nspins_list : [0])
+        for nspins in (lock_supports_nspins(T) ? nspins_list : [0])
             s2 = s1["nspins=$nspins"] = BenchmarkGroup()
             for ntasks in ntasks_list
                 nspins_barrier = ntasks > Threads.nthreads() ? nothing : 1_000_000
