@@ -97,7 +97,7 @@ function ConcurrentUtils.try_race_acquire(lock::CLHLock; nspins = -∞, ntries =
     end
 end
 
-function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
+function Base.lock(lock::CLHLock; nspins = nothing)
     handle_reentrant_acquire(lock) && return
 
     node = LockQueueNode(IsLocked())
@@ -136,7 +136,7 @@ function ConcurrentUtils.acquire(lock::CLHLock; nspins = nothing)
     return
 end
 
-function ConcurrentUtils.release(lock::CLHLock)
+function Base.unlock(lock::CLHLock)
     handle_reentrant_release(lock) && return
     node = lock.current
     # The release ordering is for `release(lock)` semantics. The acquire ordering is for

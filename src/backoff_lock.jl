@@ -86,7 +86,7 @@ function ConcurrentUtils.try_race_acquire(
     return Ok(nothing)
 end
 
-function ConcurrentUtils.acquire(
+function Base.lock(
     lock::BackoffSpinLock;
     mindelay = lock.mindelay,
     maxdelay = lock.maxdelay,
@@ -95,7 +95,7 @@ function ConcurrentUtils.acquire(
     return
 end
 
-function ConcurrentUtils.release(lock::BackoffSpinLock)
+function Base.unlock(lock::BackoffSpinLock)
     handle_reentrant_release(lock) && return
     @atomic :release lock.state = LCK_AVAILABLE
     return
