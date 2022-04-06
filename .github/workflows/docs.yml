@@ -16,18 +16,8 @@ jobs:
       - uses: julia-actions/setup-julia@v1
       - name: Install Run.jl
         run: julia -e 'using Pkg; pkg"add Run@0.1"'
-      # - name: Install dependencies
-      #   run: julia -e 'using Run; Run.prepare_docs()'
       - name: Install dependencies
-        run: |
-          using Pkg
-          Pkg.activate("docs")
-          Pkg.add([
-              PackageSpec(url = "https://github.com/tkf/Try.jl.git"),
-              PackageSpec(path = "."),
-          ])
-          Pkg.resolve()
-        shell: julia --color=yes {0}
+        run: julia -e 'using Run; Run.prepare_docs()'
       - name: Build and deploy
         id: build-and-deploy
         if: |
