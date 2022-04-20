@@ -84,6 +84,30 @@ race_acquire
 acquire_then
 ```
 
+## Guards
+
+```@eval
+using DocumentationOverview
+using ConcurrentUtils
+DocumentationOverview.table_md(
+    :[
+        Guard,
+        ReadWriteGuard,
+        guarding,
+        guarding_read,
+    ],
+    namespace = ConcurrentUtils,
+    signature = :name,
+)
+```
+
+```@docs
+Guard
+ReadWriteGuard
+guarding
+guarding_read
+```
+
 ## Low-level interfaces
 
 ```@eval

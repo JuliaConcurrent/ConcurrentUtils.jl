@@ -5,12 +5,14 @@ export
     @once,
     @tasklet,
     # Constructors
+    Guard,
     NonreentrantBackoffSpinLock,
     NonreentrantCLHLock,
     NotAcquirableError,
     NotSetError,
     OccupiedError,
     Promise,
+    ReadWriteGuard,
     ReentrantBackoffSpinLock,
     ReentrantCLHLock,
     TaskObliviousLock,
@@ -67,6 +69,29 @@ InternalPrelude.@exported_function release_write
 InternalPrelude.@exported_function try_race_acquire_read
 InternalPrelude.@exported_function try_race_acquire_write
 
+abstract type AbstractGuard end
+abstract type AbstractReadWriteGuard end
+# Should abstract types have `Data` as a parameter? But maybe some implementations may want
+# to provide a read-only wrapper type?
+
+struct GenericGuard{Lock,Data} <: AbstractGuard
+    lock::Lock
+    data::Data
+    GenericGuard(lock::Lock, data::Data) where {Lock,Data} = new{Lock,Data}(lock, data)
+end
+
+struct GenericReadWriteGuard{Lock,Data} <: AbstractReadWriteGuard
+    lock::Lock
+    data::Data
+    GenericReadWriteGuard(lock::Lock, data::Data) where {Lock,Data} =
+        new{Lock,Data}(lock, data)
+end
+
+InternalPrelude.@exported_function guardwith
+InternalPrelude.@exported_function guarding
+InternalPrelude.@exported_function guarding_read
+# InternalPrelude.@exported_function read_write_guard
+
 InternalPrelude.@exported_function unsafe_takestorages!
 
 InternalPrelude.@exported_function spinloop
@@ -93,14 +118,20 @@ using Try: Try, Ok, Err, @?
 
 import ..ConcurrentUtils: @once, @tasklet
 using ..ConcurrentUtils:
+    AbstractGuard,
+    AbstractReadWriteGuard,
     ConcurrentUtils,
+    GenericGuard,
+    GenericReadWriteGuard,
     NotAcquirableError,
     NotSetError,
     OccupiedError,
     TooManyTries,
     acquire,
     acquire_read,
+    acquire_read_then,
     acquire_write,
+    acquire_write_then,
     race_acquire,
     race_fetch_or!,
     release,
@@ -133,6 +164,7 @@ include("lock_interface.jl")
 include("backoff_lock.jl")
 include("clh_lock.jl")
 include("read_write_lock.jl")
+include("guards.jl")
 
 end  # module Internal
 
@@ -143,6 +175,9 @@ const NonreentrantBackoffSpinLock = Internal.NonreentrantBackoffSpinLock
 const ReentrantCLHLock = Internal.ReentrantCLHLock
 const NonreentrantCLHLock = Internal.NonreentrantCLHLock
 const TaskObliviousLock = NonreentrantCLHLock
+
+const Guard = Internal.Guard
+const ReadWriteGuard = Internal.ReadWriteGuard
 
 Internal.@define_docstrings
 
