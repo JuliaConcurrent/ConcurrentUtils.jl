@@ -6,13 +6,11 @@ export
     @tasklet,
     # Constructors
     Guard,
-    NotAcquirableError,
     NotSetError,
     OccupiedError,
     Promise,
     ReadWriteGuard,
-    ThreadLocalStorage,
-    TooManyTries
+    ThreadLocalStorage
 
 export Try, Err, Ok
 using Try: Try, Ok, Err
@@ -34,11 +32,6 @@ struct OccupiedError{T} <: InternalPrelude.Exception
 end
 
 struct NotSetError <: InternalPrelude.Exception end
-struct NotAcquirableError <: InternalPrelude.Exception end
-struct TooManyTries <: InternalPrelude.Exception
-    nspins::Int
-    ntries::Int
-end
 
 #=
 InternalPrelude.@exported_function isacquirable
@@ -104,10 +97,8 @@ using ..ConcurrentUtils:
     ConcurrentUtils,
     GenericGuard,
     GenericReadWriteGuard,
-    NotAcquirableError,
     NotSetError,
     OccupiedError,
-    TooManyTries,
     lock_read,
     race_fetch_or!,
     spinfor,
