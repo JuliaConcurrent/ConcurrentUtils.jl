@@ -6,16 +6,11 @@ export
     @tasklet,
     # Constructors
     Guard,
-    NonreentrantBackoffSpinLock,
-    NonreentrantCLHLock,
     NotAcquirableError,
     NotSetError,
     OccupiedError,
     Promise,
     ReadWriteGuard,
-    ReentrantBackoffSpinLock,
-    ReentrantCLHLock,
-    TaskObliviousLock,
     ThreadLocalStorage,
     TooManyTries
 
@@ -44,14 +39,6 @@ struct TooManyTries <: InternalPrelude.Exception
     nspins::Int
     ntries::Int
 end
-
-InternalPrelude.@exported_function acquire
-InternalPrelude.@exported_function release
-InternalPrelude.@exported_function race_acquire
-InternalPrelude.@exported_function try_race_acquire
-# function try_race_acquire_then end
-InternalPrelude.@exported_function acquire_then
-InternalPrelude.@exported_function lock_supports_nspins
 
 #=
 InternalPrelude.@exported_function isacquirable
@@ -122,16 +109,12 @@ using ..ConcurrentUtils:
     NotSetError,
     OccupiedError,
     TooManyTries,
-    acquire,
     acquire_read,
     acquire_read_then,
-    race_acquire,
     race_fetch_or!,
-    release,
     release_read,
     spinfor,
     spinloop,
-    try_race_acquire,
     try_race_acquire_read,
     try_race_fetch,
     try_race_fetch_or!,
@@ -153,7 +136,6 @@ include("thread_local_storage.jl")
 # Locks
 include("lock_interface.jl")
 include("backoff_lock.jl")
-include("clh_lock.jl")
 include("read_write_lock.jl")
 include("guards.jl")
 
@@ -161,11 +143,6 @@ end  # module Internal
 
 const Promise = Internal.Promise
 const ThreadLocalStorage = Internal.ThreadLocalStorage
-const ReentrantBackoffSpinLock = Internal.ReentrantBackoffSpinLock
-const NonreentrantBackoffSpinLock = Internal.NonreentrantBackoffSpinLock
-const ReentrantCLHLock = Internal.ReentrantCLHLock
-const NonreentrantCLHLock = Internal.NonreentrantCLHLock
-const TaskObliviousLock = NonreentrantCLHLock
 
 const Guard = Internal.Guard
 const ReadWriteGuard = Internal.ReadWriteGuard

@@ -4,10 +4,6 @@ using BenchmarkTools
 using ConcurrentUtils
 using SyncBarriers
 
-include("raynal_read_write_lock.jl")
-
-raynal_read_write_lock() = read_write_lock(RaynalReadWriteLock())
-
 function single_reentrantlock()
     lock = ReentrantLock()
     return (lock, lock)
@@ -25,16 +21,16 @@ function setup_repeat_acquire_release(
     barrier = CentralizedBarrier(ntasks)
     workers = map(1:ntasks) do i
         Threads.@spawn begin
-            acquire(rlock)
-            release(rlock)
+            lock(rlock)
+            unlock(rlock)
             cycle!(init[i])
             cycle!(init[i])
             for _ in 1:ntries
-                acquire(wlock)
-                release(wlock)
+                lock(wlock)
+                unlock(wlock)
                 for _ in 1:nrlocks
-                    acquire(rlock)
-                    release(rlock)
+                    lock(rlock)
+                    unlock(rlock)
                 end
                 cycle!(barrier[i], nspins_barrier)
             end
@@ -60,7 +56,7 @@ function setup(;
     nrlocks = smoke ? 3 : 2^8,
     ntasks_list = default_ntasks_list(),
     nspins_barrier = 1_000_000,
-    locks = [read_write_lock, raynal_read_write_lock, single_reentrantlock],
+    locks = [read_write_lock, single_reentrantlock],
 )
     suite = BenchmarkGroup()
     for ntasks in ntasks_list

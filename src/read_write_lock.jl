@@ -96,27 +96,23 @@ function ConcurrentUtils.release_read(rwlock::ReadWriteLock)
     return
 end
 
-function ConcurrentUtils.try_race_acquire(rwlock::ReadWriteLock)
+function Base.trylock(rwlock::ReadWriteLock)
     _, success = @atomicreplace(
         :acquire_release,
         :monotonic,
         rwlock.nreaders_and_writelock,
         NOTLOCKED => WRITELOCK_MASK,
     )
-    if success
-        return Ok(nothing)
-    else
-        return Err(NotAcquirableError())
-    end
+    return success::Bool
 end
 
 function Base.lock(rwlock::ReadWriteLock)
-    if Try.isok(try_race_acquire(rwlock))
+    if trylock(rwlock)
         return
     end
     lock(rwlock.lock) do
         while true
-            if Try.isok(try_race_acquire(rwlock))
+            if trylock(rwlock)
                 return
             end
             wait(rwlock.cond_write)
