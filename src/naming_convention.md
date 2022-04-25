@@ -13,5 +13,5 @@ Common verbs that appear as a primitive concept:
 
 * `put`
 * `fetch`
-* `acquire`
-* `release`
+* `lock`
+* `unlock`
