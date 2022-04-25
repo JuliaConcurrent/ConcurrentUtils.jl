@@ -31,5 +31,5 @@ function ConcurrentUtils.release_read(lock::RaynalReadWriteLock)
     end
 end
 
-ConcurrentUtils.acquire_write(lock::RaynalReadWriteLock) = acquire(lock.globallock)
-ConcurrentUtils.release_write(lock::RaynalReadWriteLock) = release(lock.globallock)
+ConcurrentUtils.acquire(lock::RaynalReadWriteLock) = acquire(lock.globallock)
+ConcurrentUtils.release(lock::RaynalReadWriteLock) = release(lock.globallock)

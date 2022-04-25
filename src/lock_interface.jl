@@ -79,15 +79,6 @@ function ConcurrentUtils.acquire_read_then(f, lock::AbstractReadWriteLock)
     end
 end
 
-function ConcurrentUtils.acquire_write_then(f, lock::AbstractReadWriteLock)
-    acquire_write(lock)
-    try
-        return f()
-    finally
-        release_write(lock)
-    end
-end
-
 struct WriteLockHandle{RWLock} <: Lockable
     rwlock::RWLock
 end
@@ -96,10 +87,9 @@ struct ReadLockHandle{RWLock} <: Lockable
     rwlock::RWLock
 end
 
-ConcurrentUtils.try_race_acquire(lock::WriteLockHandle) =
-    try_race_acquire_write(lock.rwlock)
-Base.lock(lck::WriteLockHandle) = acquire_write(lck.rwlock)
-Base.unlock(lck::WriteLockHandle) = release_write(lck.rwlock)
+ConcurrentUtils.try_race_acquire(lock::WriteLockHandle) = try_race_acquire(lock.rwlock)
+Base.lock(lck::WriteLockHandle) = acquire(lck.rwlock)
+Base.unlock(lck::WriteLockHandle) = release(lck.rwlock)
 
 ConcurrentUtils.try_race_acquire(lock::ReadLockHandle) = try_race_acquire_read(lock.rwlock)
 Base.lock(lck::ReadLockHandle) = acquire_read(lck.rwlock)

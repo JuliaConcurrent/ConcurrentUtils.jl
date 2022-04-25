@@ -56,18 +56,13 @@ InternalPrelude.@exported_function lock_supports_nspins
 #=
 InternalPrelude.@exported_function isacquirable
 InternalPrelude.@exported_function isacquirable_read
-InternalPrelude.@exported_function isacquirable_write
 =#
 
 InternalPrelude.@exported_function acquire_read
 InternalPrelude.@exported_function acquire_read_then
-InternalPrelude.@exported_function acquire_write
-InternalPrelude.@exported_function acquire_write_then
 InternalPrelude.@exported_function read_write_lock
 InternalPrelude.@exported_function release_read
-InternalPrelude.@exported_function release_write
 InternalPrelude.@exported_function try_race_acquire_read
-InternalPrelude.@exported_function try_race_acquire_write
 
 abstract type AbstractGuard end
 abstract type AbstractReadWriteGuard end
@@ -130,18 +125,14 @@ using ..ConcurrentUtils:
     acquire,
     acquire_read,
     acquire_read_then,
-    acquire_write,
-    acquire_write_then,
     race_acquire,
     race_fetch_or!,
     release,
     release_read,
-    release_write,
     spinfor,
     spinloop,
     try_race_acquire,
     try_race_acquire_read,
-    try_race_acquire_write,
     try_race_fetch,
     try_race_fetch_or!,
     try_race_put!

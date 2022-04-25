@@ -27,7 +27,7 @@ ConcurrentUtils.guarding_read(f::F, g::GenericGuard) where {F} =
 function ConcurrentUtils.guarding(f!::F, g::GenericReadWriteGuard) where {F}
     data = g.data
     criticalsection() = f!(data)
-    acquire_write_then(criticalsection, g.lock)
+    lock(criticalsection, g.lock)
 end
 
 function ConcurrentUtils.guarding_read(f::F, g::GenericReadWriteGuard) where {F}
