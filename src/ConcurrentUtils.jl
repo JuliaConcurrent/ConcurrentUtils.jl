@@ -6,13 +6,11 @@ export
     @tasklet,
     # Constructors
     Guard,
-    NotAcquirableError,
     NotSetError,
     OccupiedError,
     Promise,
     ReadWriteGuard,
-    ThreadLocalStorage,
-    TooManyTries
+    ThreadLocalStorage
 
 export Try, Err, Ok
 using Try: Try, Ok, Err
@@ -34,22 +32,16 @@ struct OccupiedError{T} <: InternalPrelude.Exception
 end
 
 struct NotSetError <: InternalPrelude.Exception end
-struct NotAcquirableError <: InternalPrelude.Exception end
-struct TooManyTries <: InternalPrelude.Exception
-    nspins::Int
-    ntries::Int
-end
 
 #=
 InternalPrelude.@exported_function isacquirable
 InternalPrelude.@exported_function isacquirable_read
 =#
 
-InternalPrelude.@exported_function acquire_read
-InternalPrelude.@exported_function acquire_read_then
 InternalPrelude.@exported_function read_write_lock
-InternalPrelude.@exported_function release_read
-InternalPrelude.@exported_function try_race_acquire_read
+InternalPrelude.@exported_function trylock_read
+InternalPrelude.@exported_function lock_read
+InternalPrelude.@exported_function unlock_read
 
 abstract type AbstractGuard end
 abstract type AbstractReadWriteGuard end
@@ -105,20 +97,17 @@ using ..ConcurrentUtils:
     ConcurrentUtils,
     GenericGuard,
     GenericReadWriteGuard,
-    NotAcquirableError,
     NotSetError,
     OccupiedError,
-    TooManyTries,
-    acquire_read,
-    acquire_read_then,
+    lock_read,
     race_fetch_or!,
-    release_read,
     spinfor,
     spinloop,
-    try_race_acquire_read,
     try_race_fetch,
     try_race_fetch_or!,
-    try_race_put!
+    try_race_put!,
+    trylock_read,
+    unlock_read
 
 #=
 if isfile(joinpath(@__DIR__, "config.jl"))

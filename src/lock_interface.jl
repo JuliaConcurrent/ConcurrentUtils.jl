@@ -4,12 +4,12 @@
 
 abstract type AbstractReadWriteLock <: Base.AbstractLock end
 
-function ConcurrentUtils.acquire_read_then(f, lock::AbstractReadWriteLock)
-    acquire_read(lock)
+function ConcurrentUtils.lock_read(f, lock::AbstractReadWriteLock)
+    lock_read(lock)
     try
         return f()
     finally
-        release_read(lock)
+        unlock_read(lock)
     end
 end
 
@@ -17,9 +17,9 @@ struct ReadLockHandle{RWLock} <: Base.AbstractLock
     rwlock::RWLock
 end
 
-Base.trylock(lck::ReadLockHandle) = Try.iok(try_race_acquire_read(lck.rwlock))
-Base.lock(lck::ReadLockHandle) = acquire_read(lck.rwlock)
-Base.unlock(lck::ReadLockHandle) = release_read(lck.rwlock)
+Base.trylock(lck::ReadLockHandle) = trylock_read(lck.rwlock)
+Base.lock(lck::ReadLockHandle) = lock_read(lck.rwlock)
+Base.unlock(lck::ReadLockHandle) = unlock_read(lck.rwlock)
 
 ConcurrentUtils.read_write_lock(lock::AbstractReadWriteLock = ReadWriteLock()) =
     (ReadLockHandle(lock), lock)

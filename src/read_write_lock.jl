@@ -23,11 +23,7 @@ function ReadWriteLock()
 end
 
 # Not very efficient but lock-free
-function ConcurrentUtils.try_race_acquire_read(
-    rwlock::ReadWriteLock;
-    nspins = -∞,
-    ntries = -∞,
-)
+function ConcurrentUtils.trylock_read(rwlock::ReadWriteLock; nspins = -∞, ntries = -∞)
     local ns::Int = 0
     local nt::Int = 0
     while true
@@ -41,16 +37,16 @@ function ConcurrentUtils.try_race_acquire_read(
                 rwlock.nreaders_and_writelock,
                 old => old + NREADERS_INC,
             )
-            success && return Ok(nothing)
+            success && return true
             nt += 1
-            nt < ntries || return Err(TooManyTries(ns, nt))
+            nt < ntries || return false
         end
         ns += 1
-        ns < nspins || return Err(TooManyTries(ns, nt))
+        ns < nspins || return false
     end
 end
 
-function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)
+function ConcurrentUtils.lock_read(rwlock::ReadWriteLock)
 
     # Using hardware FAA
     ptr = Ptr{NReadersAndWritelock}(
@@ -76,7 +72,7 @@ function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)
     end
 end
 
-function ConcurrentUtils.release_read(rwlock::ReadWriteLock)
+function ConcurrentUtils.unlock_read(rwlock::ReadWriteLock)
 
     # Using hardware FAA
     ptr = Ptr{NReadersAndWritelock}(
