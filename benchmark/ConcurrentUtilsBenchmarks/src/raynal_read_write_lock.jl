@@ -1,8 +1,8 @@
 using ConcurrentUtils
-using ConcurrentUtils.Internal: ReadWriteLockable  # TODO: export?
+using ConcurrentUtils.Internal: AbstractReadWriteLock  # TODO: export?
 
 # https://en.wikipedia.org/wiki/Readers%E2%80%93writer_lock#Using_two_mutexes
-mutable struct RaynalReadWriteLock{ReadLock,GlobalLock} <: ReadWriteLockable
+mutable struct RaynalReadWriteLock{ReadLock,GlobalLock} <: AbstractReadWriteLock
     readlock::ReadLock
     globallock::GlobalLock  # must be task-oblivious
     _pad::NTuple{7,Int}

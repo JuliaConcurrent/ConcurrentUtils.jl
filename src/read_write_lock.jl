@@ -4,7 +4,7 @@ const WRITELOCK_MASK = UInt64(1)
 
 const NReadersAndWritelock = UInt64
 
-mutable struct ReadWriteLock <: ReadWriteLockable
+mutable struct ReadWriteLock <: AbstractReadWriteLock
     @atomic nreaders_and_writelock::NReadersAndWritelock
     # TODO: use condition variables with lock-free notify
     @const lock::ReentrantLock

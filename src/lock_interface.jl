@@ -68,9 +68,9 @@ end
 ### Reader-writer lock interface
 ###
 
-abstract type ReadWriteLockable <: Lockable end
+abstract type AbstractReadWriteLock <: Lockable end
 
-function ConcurrentUtils.acquire_read_then(f, lock::ReadWriteLockable)
+function ConcurrentUtils.acquire_read_then(f, lock::AbstractReadWriteLock)
     acquire_read(lock)
     try
         return f()
@@ -79,7 +79,7 @@ function ConcurrentUtils.acquire_read_then(f, lock::ReadWriteLockable)
     end
 end
 
-function ConcurrentUtils.acquire_write_then(f, lock::ReadWriteLockable)
+function ConcurrentUtils.acquire_write_then(f, lock::AbstractReadWriteLock)
     acquire_write(lock)
     try
         return f()
@@ -105,5 +105,5 @@ ConcurrentUtils.try_race_acquire(lock::ReadLockHandle) = try_race_acquire_read(l
 Base.lock(lck::ReadLockHandle) = acquire_read(lck.rwlock)
 Base.unlock(lck::ReadLockHandle) = release_read(lck.rwlock)
 
-ConcurrentUtils.read_write_lock(lock::ReadWriteLockable = ReadWriteLock()) =
+ConcurrentUtils.read_write_lock(lock::AbstractReadWriteLock = ReadWriteLock()) =
     (ReadLockHandle(lock), WriteLockHandle(lock))

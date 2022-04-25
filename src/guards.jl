@@ -2,7 +2,8 @@ const Guard = GenericGuard{ReentrantLock}
 const ReadWriteGuard = GenericReadWriteGuard{ReadWriteLock}
 
 ConcurrentUtils.guardwith(data, lock) = GenericGuard(lock, data)
-ConcurrentUtils.guardwith(data, lock::ReadWriteLockable) = GenericReadWriteGuard(lock, data)
+ConcurrentUtils.guardwith(data, lock::AbstractReadWriteLock) =
+    GenericReadWriteGuard(lock, data)
 
 function ConcurrentUtils.GenericGuard{Lock}(data) where {Lock}
     lock = Lock()
@@ -58,6 +59,6 @@ function ConcurrentUtils.read_write_guard(guard::AbstractReadWriteGuard)
     return (readguard, writeguard)
 end
 
-ConcurrentUtils.read_write_guard(lock::ReadWriteLockable, data) =
+ConcurrentUtils.read_write_guard(lock::AbstractReadWriteLock, data) =
     ConcurrentUtils.read_write_guard(GenericReadWriteGuard(lock, data))
 =#
