@@ -1,23 +1,8 @@
 ###
-### Main ConcurrentUtils' lock interface
-###
-
-abstract type Lockable <: Base.AbstractLock end
-
-function Base.lock(f, lck::Lockable; options...)
-    lock(lck; options...)
-    try
-        return f()
-    finally
-        unlock(lck)
-    end
-end
-
-###
 ### Reader-writer lock interface
 ###
 
-abstract type AbstractReadWriteLock <: Lockable end
+abstract type AbstractReadWriteLock <: Base.AbstractLock end
 
 function ConcurrentUtils.acquire_read_then(f, lock::AbstractReadWriteLock)
     acquire_read(lock)
@@ -28,11 +13,11 @@ function ConcurrentUtils.acquire_read_then(f, lock::AbstractReadWriteLock)
     end
 end
 
-struct WriteLockHandle{RWLock} <: Lockable
+struct WriteLockHandle{RWLock} <: Base.AbstractLock
     rwlock::RWLock
 end
 
-struct ReadLockHandle{RWLock} <: Lockable
+struct ReadLockHandle{RWLock} <: Base.AbstractLock
     rwlock::RWLock
 end
 
