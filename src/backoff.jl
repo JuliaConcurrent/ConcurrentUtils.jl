@@ -1,4 +1,3 @@
-# TODO: export this
 mutable struct Backoff
     limit::Int
     @const maxdelay::Int

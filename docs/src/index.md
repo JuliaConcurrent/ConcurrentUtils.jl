@@ -54,6 +54,7 @@ using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
         read_write_lock,
+        Backoff,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -62,6 +63,7 @@ DocumentationOverview.table_md(
 
 ```@docs
 read_write_lock
+Backoff
 ```
 
 ## Guards
