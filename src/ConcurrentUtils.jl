@@ -5,6 +5,7 @@ export
     @once,
     @tasklet,
     # Constructors
+    Backoff,
     Guard,
     NotSetError,
     OccupiedError,
@@ -124,14 +125,15 @@ include("thread_local_storage.jl")
 
 # Locks
 include("lock_interface.jl")
-include("backoff_lock.jl")
 include("read_write_lock.jl")
 include("guards.jl")
+include("backoff.jl")
 
 end  # module Internal
 
 const Promise = Internal.Promise
 const ThreadLocalStorage = Internal.ThreadLocalStorage
+const Backoff = Internal.Backoff
 
 const Guard = Internal.Guard
 const ReadWriteGuard = Internal.ReadWriteGuard
