@@ -53,17 +53,7 @@ using DocumentationOverview
 using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
-        ReentrantCLHLock,
-        NonreentrantCLHLock,
-        ReentrantBackoffSpinLock,
-        NonreentrantBackoffSpinLock,
-        TaskObliviousLock,
         read_write_lock,
-        acquire,
-        release,
-        try_race_acquire,
-        race_acquire,
-        acquire_then,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -71,17 +61,7 @@ DocumentationOverview.table_md(
 ```
 
 ```@docs
-ReentrantCLHLock
-NonreentrantCLHLock
-ReentrantBackoffSpinLock
-NonreentrantBackoffSpinLock
-TaskObliviousLock
 read_write_lock
-acquire
-release
-try_race_acquire
-race_acquire
-acquire_then
 ```
 
 ## Guards

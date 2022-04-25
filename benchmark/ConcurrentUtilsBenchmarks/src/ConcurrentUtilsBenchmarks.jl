@@ -2,14 +2,10 @@ module ConcurrentUtilsBenchmarks
 
 using BenchmarkTools: Benchmark, BenchmarkGroup
 
-include("bench_acquire_release_spin_locks.jl")
-include("bench_acquire_release_coop_locks.jl")
 include("bench_acquire_release_read_write_locks.jl")
 include("bench_acquire_release_read_locks.jl")
 
 const MODULES = [
-    BenchAcquireReleaseSpinLocks,
-    BenchAcquireReleaseCoOpLocks,
     BenchAcquireReleaseReadWriteLocks,
     BenchAcquireReleaseReadLocks,
     # ...

@@ -3,25 +3,45 @@ module TestReadWriteLock
 using ConcurrentUtils
 using Test
 
-using ..TestLocks: check_minimal_lock_interface
 using ..Utils: poll_until, unfair_sleep
 
 function test_no_blocks()
     rlock, wlock = read_write_lock()
 
     @sync begin
-        acquire(rlock)
-        acquire(rlock)
+        lock(rlock)
+        lock(rlock)
         Threads.@spawn begin
-            acquire(rlock)
-            release(rlock)
+            lock(rlock)
+            unlock(rlock)
         end
-        release(rlock)
-        release(rlock)
+        unlock(rlock)
+        unlock(rlock)
     end
 
-    acquire(wlock)
-    release(wlock)
+    lock(wlock)
+    unlock(wlock)
+end
+
+function check_minimal_lock_interface(lck)
+    phase = Threads.Atomic{Int}(0)
+    lock(lck)
+    @sync begin
+        Threads.@spawn begin
+            phase[] = 1
+            lock(lck)
+            unlock(lck)
+            phase[] = 2
+        end
+
+        @test poll_until(() -> phase[] != 0)
+        @test phase[] == 1
+        sleep(0.01)
+        @test phase[] == 1
+
+        unlock(lck)
+    end
+    @test phase[] == 2
 end
 
 function test_wlock()
@@ -32,11 +52,11 @@ end
 function test_a_writer_blocks_a_reader()
     rlock, wlock = read_write_lock()
     locked = Threads.Atomic{Bool}(false)
-    @sync acquire_then(wlock) do
+    @sync lock(wlock) do
         Threads.@spawn begin
-            acquire(rlock)
+            lock(rlock)
             locked[] = true
-            release(rlock)
+            unlock(rlock)
         end
 
         sleep(0.01)
@@ -49,11 +69,11 @@ function test_a_writer_blocks_a_writer()
     _rlock, wlock = read_write_lock()
 
     locked = Threads.Atomic{Bool}(false)
-    @sync acquire_then(wlock) do
+    @sync lock(wlock) do
         Threads.@spawn begin
-            acquire(wlock)
+            lock(wlock)
             locked[] = true
-            release(wlock)
+            unlock(wlock)
         end
 
         sleep(0.01)
@@ -66,11 +86,11 @@ function test_a_reader_blocks_a_writer()
     rlock, wlock = read_write_lock()
 
     locked = Threads.Atomic{Bool}(false)
-    @sync acquire_then(rlock) do
+    @sync lock(rlock) do
         Threads.@spawn begin
-            acquire(wlock)
+            lock(wlock)
             locked[] = true
-            release(wlock)
+            unlock(wlock)
         end
 
         sleep(0.01)
@@ -88,7 +108,7 @@ function check_concurrent_mutex(nreaders, nwriters, ntries)
     @sync begin
         for _ in 1:nreaders
             Threads.@spawn while true
-                acquire_then(rlock) do
+                lock(rlock) do
                     # Threads.atomic_add!(nreads, 1)
                     ref[] < limit
                 end || break
@@ -99,7 +119,7 @@ function check_concurrent_mutex(nreaders, nwriters, ntries)
 
         for _ in 1:nwriters
             Threads.@spawn for _ in 1:ntries
-                acquire_then(wlock) do
+                lock(wlock) do
                     local x = ref[]
 
                     # sleep about 3 μs
