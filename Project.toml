@@ -1,7 +1,7 @@
 name = "ConcurrentUtils"
 uuid = "3df5f688-6c4c-4767-8685-17f5ad261477"
 authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
-version = "0.1.0-DEV"
+version = "0.1.0"
 
 [deps]
 ExternalDocstrings = "e189563c-0753-4f5e-ad5c-be4293c83fb4"
