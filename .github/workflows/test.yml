@@ -51,7 +51,20 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.julia-version }}
-      - uses: tkf/julia-aqua@v1
+      - name: Install dependencies
+        run: |
+          using Pkg
+          Pkg.develop(PackageSpec(path = "."))
+          Pkg.add([
+              PackageSpec(name = "Aqua", version = "0.5"),
+          ])
+        shell: julia --color=yes {0}
+      - name: Run Aqua
+        run: |
+          using Aqua
+          using ConcurrentUtils
+          Aqua.test_all(ConcurrentUtils; unbound_args = false)
+        shell: julia --color=yes {0}
 
   # A job that succeeds if and only if all jobs in `test` succeed.
   all-success:
