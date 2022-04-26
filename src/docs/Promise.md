@@ -36,7 +36,7 @@ includes an event that sets a value to a `promise` include:
 
 * `put!(promise, value)` that does not throw.
 * `try_race_put!(promise, value)` that returns an `Ok` result.
-* `try_race_put_with!(thunk, promise)` that calls `thunk` (and hance returns an `Err`).
+* `try_race_put_with!(thunk, promise)` that calls `thunk` (and hence returns an `Ok`).
 * `race_put_with!(thunk, promise)` that calls `thunk`.
 
 (The invocation `thunk()` is sequenced-before the event that sets the value.)
@@ -47,8 +47,8 @@ Invocations of the API that includes an event that retrieves or waits for a valu
 * `fetch(promise)`
 * `wait(promise)`
 * `try_race_fetch(promise)` that returns an `Ok` result.
-* `try_race_put_with!(thunk, promise)` that does not call `thunk` (and hance returns an
-  `Ok`)
+* `try_race_put_with!(thunk, promise)` that does not call `thunk` (and hence returns an
+  `Err`)
 * `race_put_with!(thunk, promise)` that does not call `thunk`
 
 ## Supported operations
