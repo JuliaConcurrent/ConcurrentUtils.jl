@@ -37,7 +37,7 @@ julia> wait(t);
 
 An event that retrieves or waits for a value from a tasklet `t` establishes a
 happened-before edge from the events in `code`.  Invocations of the API that includes an
-event that retrieves or waits for a value from a `promise` include:
+event that retrieves or waits for a value from a tasklet `t` include:
 
 * `fetch(t)`
 * `wait(t)`
