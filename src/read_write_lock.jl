@@ -1,3 +1,5 @@
+abstract type AbstractReadWriteLock <: Base.AbstractLock end
+
 const NOTLOCKED = UInt64(0)
 const NREADERS_INC = UInt64(2)
 const WRITELOCK_MASK = UInt64(1)
@@ -124,4 +126,20 @@ function Base.unlock(rwlock::ReadWriteLock)
         notify(rwlock.cond_write; all = false)
     end
     return
+end
+
+###
+### High-level APIs
+###
+
+ConcurrentUtils.lock_read(lck) = lock(lck)
+ConcurrentUtils.unlock_read(lck) = unlock(lck)
+
+function ConcurrentUtils.lock_read(f, lock)
+    lock_read(lock)
+    try
+        return f()
+    finally
+        unlock_read(lock)
+    end
 end
