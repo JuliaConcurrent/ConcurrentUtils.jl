@@ -11,30 +11,30 @@ function test_serial()
     @test fetch(p) == 1
     @test wait(p) === nothing
     @test try_race_fetch(p) == Ok{Any}(1)
-    @test try_race_fetch_or!(error, p) == Ok{Any}(1)
-    @test race_fetch_or!(error, p) == 1
-    @test try_race_put!(p, 2) == Err(OccupiedError{Any}(1))
+    @test try_race_put_with!(error, p) == Err{Any}(1)
+    @test race_put_with!(error, p) == 1
+    @test try_race_put!(p, 2) == Err{Any}(1)
     @test_throws OccupiedError{Any}(1) put!(p, 2)
 end
 
 function test_serial_try_race_fetch_or()
     p = Promise()
-    @test try_race_fetch_or!(() -> 1, p) == Err{Any}(1)
-    @test try_race_fetch_or!(error, p) == Ok{Any}(1)
+    @test try_race_put_with!(() -> 1, p) == Ok{Any}(1)
+    @test try_race_put_with!(error, p) == Err{Any}(1)
     @test fetch(p) == 1
 end
 
 function test_serial_race_fetch_or()
     p = Promise()
-    @test race_fetch_or!(() -> 1, p) == 1
-    @test race_fetch_or!(error, p) == 1
+    @test race_put_with!(() -> 1, p) == 1
+    @test race_put_with!(error, p) == 1
     @test fetch(p) == 1
 end
 
 function test_serial_try_race_put()
     p = Promise()
     @test try_race_put!(p, 1) == Ok{Any}(1)
-    @test try_race_put!(p, 2) == Err(OccupiedError{Any}(1))
+    @test try_race_put!(p, 2) == Err{Any}(1)
 end
 
 function check_concurrent_put_fetch(ntasks, ntries)

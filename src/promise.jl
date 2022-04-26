@@ -39,41 +39,39 @@ function ConcurrentUtils.try_race_fetch(promise::Promise{T}) where {T}
     end
 end
 
-function ConcurrentUtils.try_race_fetch_or!(
+ConcurrentUtils.race_put_with!(f::F, promise::Promise) where {F} =
+    Try.unwrap_or_else(identity, try_race_put_with!(f, promise))
+
+ConcurrentUtils.race_put!(promise::Promise, value) =
+    Try.unwrap_or_else(identity, try_race_put!(promise, value))
+
+function ConcurrentUtils.try_race_put_with!(
     thunk::F,
     promise::Promise{T},
 )::Union{Ok{T},Err{T}} where {F,T}
     old = @atomic :monotonic promise.value
     if !(old isa NotSet)
         atomic_fence(:acquire)
-        return Ok{T}(old)
+        return Err{T}(old)
     end
     lock(promise.cond) do
         local old = @atomic :monotonic promise.value
         if !(old isa NotSet)
-            return Ok{T}(old)
+            return Err{T}(old)
         end
         new = thunk()
         new = convert(eltype(promise), new)
         @atomic :release promise.value = new
         notify(promise.cond)
-        return Err{T}(new)
+        return Ok{T}(new)
     end
 end
 
-ConcurrentUtils.race_fetch_or!(f::F, promise::Promise) where {F} =
-    unwrap_or_else(identity, try_race_fetch_or!(f, promise))
+ConcurrentUtils.try_race_put!(promise, value) =
+    ConcurrentUtils.try_race_put_with!(Returns(value), promise)
 
-function ConcurrentUtils.try_race_put!(
-    promise::Promise{T},
-    value,
-)::Union{Ok{T},Err{OccupiedError{T}}} where {T}
-    result = try_race_fetch_or!(Returns(value), promise)
-    if Try.isok(result)
-        Err(OccupiedError{T}(Try.unwrap(result)))
-    else
-        Ok{T}(Try.unwrap_err(result))
+function Base.put!(promise::Promise{T}, value) where {T}
+    Try.unwrap_or_else(try_race_put!(promise, value)) do existing
+        throw(OccupiedError{T}(existing))
     end
 end
-
-Base.put!(promise::Promise, value) = Try.unwrap(try_race_put!(promise, value))
