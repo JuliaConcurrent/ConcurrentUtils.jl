@@ -14,7 +14,7 @@ include:
   a `Promise`-like memoized thunk.
 * [`@once code`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.@once):
   execute the `code` at most once.
-* [`read_write_lock`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.read_write_lock):
+* [`ReadWriteLock`](https://juliaconcurrent.github.io/ConcurrentUtils.jl/dev/#ConcurrentUtils.ReadWriteLock):
   a reader-writer lock.
 * ... and more
 

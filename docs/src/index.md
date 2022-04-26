@@ -57,7 +57,6 @@ DocumentationOverview.table_md(
         lock_read,
         unlock_read,
         trylock_read,
-        read_write_lock,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -69,7 +68,6 @@ ReadWriteLock
 lock_read
 unlock_read
 trylock_read
-read_write_lock
 ```
 
 ## Guards

@@ -40,7 +40,6 @@ InternalPrelude.@exported_function isacquirable
 InternalPrelude.@exported_function isacquirable_read
 =#
 
-InternalPrelude.@exported_function read_write_lock
 InternalPrelude.@exported_function trylock_read
 InternalPrelude.@exported_function lock_read
 InternalPrelude.@exported_function unlock_read
@@ -125,7 +124,6 @@ include("tasklet.jl")
 include("thread_local_storage.jl")
 
 # Locks
-include("lock_interface.jl")
 include("read_write_lock.jl")
 include("guards.jl")
 include("backoff.jl")
