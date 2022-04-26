@@ -11,6 +11,7 @@ export
     OccupiedError,
     Promise,
     ReadWriteGuard,
+    ReadWriteLock,
     ThreadLocalStorage
 
 export Try, Err, Ok
@@ -133,6 +134,7 @@ end  # module Internal
 
 const Promise = Internal.Promise
 const ThreadLocalStorage = Internal.ThreadLocalStorage
+const ReadWriteLock = Internal.ReadWriteLock
 const Backoff = Internal.Backoff
 
 const Guard = Internal.Guard
