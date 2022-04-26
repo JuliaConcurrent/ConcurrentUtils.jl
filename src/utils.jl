@@ -73,22 +73,3 @@ _typeof(x) = typeof(x)
 _typeof(::Type{T}) where {T} = Type{T}
 
 pad7() = ntuple(_ -> 0, Val(7))
-
-function unwrap_or_else(f, result)
-    if Try.iserr(result)
-        f(Try.unwrap_err(result))
-    else
-        Try.unwrap(result)
-    end
-end
-
-macro return_unwrap(ex)
-    quote
-        result = $(esc(ex))
-        if Try.iserr(result)
-            result
-        else
-            return Try.unwrap(result)
-        end
-    end
-end

@@ -9,8 +9,8 @@ DocumentationOverview.table_md(
     :[
         Promise,
         try_race_fetch,
-        try_race_fetch_or!,
-        race_fetch_or!,
+        try_race_put_with!,
+        race_put_with!,
         try_race_put!,
     ],
     namespace = ConcurrentUtils,
@@ -21,8 +21,8 @@ DocumentationOverview.table_md(
 ```@docs
 Promise
 try_race_fetch
-try_race_fetch_or!
-race_fetch_or!
+try_race_put_with!
+race_put_with!
 try_race_put!
 ```
 

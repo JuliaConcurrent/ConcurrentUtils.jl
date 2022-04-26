@@ -21,10 +21,11 @@ module InternalPrelude
 include("prelude.jl")
 end  # module InternalPrelude
 
-InternalPrelude.@exported_function race_fetch_or!
+InternalPrelude.@exported_function race_put!
+InternalPrelude.@exported_function race_put_with!
 InternalPrelude.@exported_function try_race_fetch
-InternalPrelude.@exported_function try_race_fetch_or!
 InternalPrelude.@exported_function try_race_put!
+InternalPrelude.@exported_function try_race_put_with!
 
 macro once end
 macro tasklet end
@@ -101,12 +102,13 @@ using ..ConcurrentUtils:
     NotSetError,
     OccupiedError,
     lock_read,
-    race_fetch_or!,
+    race_put!,
+    race_put_with!,
     spinfor,
     spinloop,
     try_race_fetch,
-    try_race_fetch_or!,
     try_race_put!,
+    try_race_put_with!,
     trylock_read,
     unlock_read
 
