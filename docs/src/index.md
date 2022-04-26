@@ -8,10 +8,10 @@ using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
         Promise,
-        try_fetch,
-        try_fetch_or!,
-        fetch_or!,
-        try_put!,
+        try_race_fetch,
+        try_race_fetch_or!,
+        race_fetch_or!,
+        try_race_put!,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -20,10 +20,10 @@ DocumentationOverview.table_md(
 
 ```@docs
 Promise
-try_fetch
-try_fetch_or!
-fetch_or!
-try_put!
+try_race_fetch
+try_race_fetch_or!
+race_fetch_or!
+try_race_put!
 ```
 
 ## Promise-like interfaces
@@ -46,21 +46,17 @@ DocumentationOverview.table_md(
 @once
 ```
 
-## Locks
+## Read-write Lock
 
 ```@eval
 using DocumentationOverview
 using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
-        ReentrantCLHLock,
-        NonreentrantCLHLock,
-        TaskObliviousLock,
-        read_write_locks,
-        acquire,
-        release,
-        try_acquire,
-        acquire_then,
+        ReadWriteLock,
+        lock_read,
+        unlock_read,
+        trylock_read,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -68,14 +64,34 @@ DocumentationOverview.table_md(
 ```
 
 ```@docs
-ReentrantCLHLock
-NonreentrantCLHLock
-TaskObliviousLock
-read_write_locks
-acquire
-release
-try_acquire
-acquire_then
+ReadWriteLock
+lock_read
+unlock_read
+trylock_read
+```
+
+## Guards
+
+```@eval
+using DocumentationOverview
+using ConcurrentUtils
+DocumentationOverview.table_md(
+    :[
+        Guard,
+        ReadWriteGuard,
+        guarding,
+        guarding_read,
+    ],
+    namespace = ConcurrentUtils,
+    signature = :name,
+)
+```
+
+```@docs
+Guard
+ReadWriteGuard
+guarding
+guarding_read
 ```
 
 ## Low-level interfaces
@@ -86,6 +102,7 @@ using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
         ThreadLocalStorage,
+        Backoff,
         spinloop,
     ],
     namespace = ConcurrentUtils,
@@ -95,5 +112,6 @@ DocumentationOverview.table_md(
 
 ```@docs
 ThreadLocalStorage
+Backoff
 spinloop
 ```

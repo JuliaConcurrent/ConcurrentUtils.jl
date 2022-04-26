@@ -7,10 +7,10 @@ adder(x) = @tasklet Ref(x + 1)
 
 function test_serial_tasklet()
     t = adder(2)
-    @test try_fetch(t) == Err(NotSetError())
+    @test try_race_fetch(t) == Err(NotSetError())
     @test t()[] == 3
     @test t() === t()
-    @test try_fetch(t) == Ok(t())
+    @test try_race_fetch(t) == Ok(t())
 end
 
 get_a_dict() = @once Dict(:a => 1, :b => 2, :c => 3)

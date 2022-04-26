@@ -6,6 +6,7 @@ version = "0.1.0-DEV"
 [deps]
 ConcurrentUtils = "3df5f688-6c4c-4767-8685-17f5ad261477"
 ConcurrentUtilsBenchmarks = "3e9c3bac-f725-47ac-a20d-a7ddd9bc8deb"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 

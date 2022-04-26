@@ -1,5 +1,4 @@
 mutable struct ThreadLocalStorage{T,Factory}
-    # TODO: pad `T`
     @const factory::Factory
     @atomic storages::Vector{T}
     @const cond::Threads.Condition
@@ -17,12 +16,16 @@ function ThreadLocalStorage(factory)
     )
 end
 
-#=
-function unsafe_empty!(tls::ThreadLocalStorage)
-    empty!(tls.storages)
+function ConcurrentUtils.unsafe_takestorages!(tls::ThreadLocalStorage{T}) where {T}
+    storages = @atomic :monotonic tls.storages
+    @atomic :monotonic tls.storages = T[]
+    return storages
+end
+
+function Base.empty!(tls::ThreadLocalStorage{T}) where {T}
+    @atomic :release tls.storages = T[]
     return tls
 end
-=#
 
 function getstorages!(tls::ThreadLocalStorage{T}) where {T}
     storages = @atomic :acquire tls.storages
@@ -35,14 +38,19 @@ function getstorages!(tls::ThreadLocalStorage{T}) where {T}
         if n >= Threads.nthreads()
             return storages
         end
-        resize!(storages, Threads.nthreads())
+        newstorages = similar(storages, Threads.nthreads())
+        copyto!(newstorages, storages)
         local factory = tls.factory
         for i in n+1:Threads.nthreads()
             local value = factory()::T
-            storages[i] = value
+            newstorages[i] = value
         end
-        return storages
+        @atomic :release tls.storages = newstorages
+        return newstorages
     end
 end
 
 Base.getindex(tls::ThreadLocalStorage) = getstorages!(tls)[Threads.threadid()]
+
+
+const THREAD_LOCAL_RNG = ThreadLocalStorage(Xoshiro)

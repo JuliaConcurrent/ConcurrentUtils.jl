@@ -5,13 +5,13 @@ export
     @once,
     @tasklet,
     # Constructors
-    NonreentrantCLHLock,
-    NotAcquirableError,
+    Backoff,
+    Guard,
     NotSetError,
     OccupiedError,
     Promise,
-    ReentrantCLHLock,
-    TaskObliviousLock,
+    ReadWriteGuard,
+    ReadWriteLock,
     ThreadLocalStorage
 
 export Try, Err, Ok
@@ -21,10 +21,10 @@ module InternalPrelude
 include("prelude.jl")
 end  # module InternalPrelude
 
-InternalPrelude.@exported_function fetch_or!
-InternalPrelude.@exported_function try_fetch
-InternalPrelude.@exported_function try_fetch_or!
-InternalPrelude.@exported_function try_put!
+InternalPrelude.@exported_function race_fetch_or!
+InternalPrelude.@exported_function try_race_fetch
+InternalPrelude.@exported_function try_race_fetch_or!
+InternalPrelude.@exported_function try_race_put!
 
 macro once end
 macro tasklet end
@@ -34,31 +34,43 @@ struct OccupiedError{T} <: InternalPrelude.Exception
 end
 
 struct NotSetError <: InternalPrelude.Exception end
-struct NotAcquirableError <: InternalPrelude.Exception end
-
-InternalPrelude.@exported_function acquire
-InternalPrelude.@exported_function release
-InternalPrelude.@exported_function try_acquire
-# function try_acquire_then end
-InternalPrelude.@exported_function acquire_then
 
 #=
 InternalPrelude.@exported_function isacquirable
 InternalPrelude.@exported_function isacquirable_read
-InternalPrelude.@exported_function isacquirable_write
 =#
 
-InternalPrelude.@exported_function acquire_read
-InternalPrelude.@exported_function acquire_read_then
-InternalPrelude.@exported_function acquire_write
-InternalPrelude.@exported_function acquire_write_then
-InternalPrelude.@exported_function read_write_locks
-InternalPrelude.@exported_function release_read
-InternalPrelude.@exported_function release_write
-InternalPrelude.@exported_function try_acquire_read
-InternalPrelude.@exported_function try_acquire_write
+InternalPrelude.@exported_function trylock_read
+InternalPrelude.@exported_function lock_read
+InternalPrelude.@exported_function unlock_read
+
+abstract type AbstractGuard end
+abstract type AbstractReadWriteGuard end
+# Should abstract types have `Data` as a parameter? But maybe some implementations may want
+# to provide a read-only wrapper type?
+
+struct GenericGuard{Lock,Data} <: AbstractGuard
+    lock::Lock
+    data::Data
+    GenericGuard(lock::Lock, data::Data) where {Lock,Data} = new{Lock,Data}(lock, data)
+end
+
+struct GenericReadWriteGuard{Lock,Data} <: AbstractReadWriteGuard
+    lock::Lock
+    data::Data
+    GenericReadWriteGuard(lock::Lock, data::Data) where {Lock,Data} =
+        new{Lock,Data}(lock, data)
+end
+
+InternalPrelude.@exported_function guardwith
+InternalPrelude.@exported_function guarding
+InternalPrelude.@exported_function guarding_read
+# InternalPrelude.@exported_function read_write_guard
+
+InternalPrelude.@exported_function unsafe_takestorages!
 
 InternalPrelude.@exported_function spinloop
+InternalPrelude.@exported_function spinfor
 
 # Maybe:
 # * @static_thread_local_storage
@@ -73,6 +85,7 @@ module Internal
 
 using Core.Intrinsics: atomic_fence
 using Core: OpaqueClosure
+using Random: Xoshiro
 
 import UnsafeAtomics: UnsafeAtomics, acq_rel
 using ExternalDocstrings: @define_docstrings
@@ -80,23 +93,22 @@ using Try: Try, Ok, Err, @?
 
 import ..ConcurrentUtils: @once, @tasklet
 using ..ConcurrentUtils:
+    AbstractGuard,
+    AbstractReadWriteGuard,
     ConcurrentUtils,
-    NotAcquirableError,
+    GenericGuard,
+    GenericReadWriteGuard,
     NotSetError,
     OccupiedError,
-    acquire,
-    acquire_read,
-    acquire_write,
-    fetch_or!,
-    release,
-    release_read,
-    release_write,
+    lock_read,
+    race_fetch_or!,
+    spinfor,
     spinloop,
-    try_acquire_read,
-    try_acquire_write,
-    try_fetch,
-    try_fetch_or!,
-    try_put!
+    try_race_fetch,
+    try_race_fetch_or!,
+    try_race_put!,
+    trylock_read,
+    unlock_read
 
 #=
 if isfile(joinpath(@__DIR__, "config.jl"))
@@ -112,17 +124,19 @@ include("tasklet.jl")
 include("thread_local_storage.jl")
 
 # Locks
-include("lock_interface.jl")
-include("clh_lock.jl")
 include("read_write_lock.jl")
+include("guards.jl")
+include("backoff.jl")
 
 end  # module Internal
 
 const Promise = Internal.Promise
 const ThreadLocalStorage = Internal.ThreadLocalStorage
-const ReentrantCLHLock = Internal.ReentrantCLHLock
-const NonreentrantCLHLock = Internal.NonreentrantCLHLock
-const TaskObliviousLock = NonreentrantCLHLock
+const ReadWriteLock = Internal.ReadWriteLock
+const Backoff = Internal.Backoff
+
+const Guard = Internal.Guard
+const ReadWriteGuard = Internal.ReadWriteGuard
 
 Internal.@define_docstrings
 

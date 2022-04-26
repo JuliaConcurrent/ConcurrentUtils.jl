@@ -4,10 +4,8 @@ using BenchmarkTools
 using ConcurrentUtils
 using SyncBarriers
 
-using ..BenchAcquireReleaseReadWriteLocks: raynal_read_write_locks, single_reentrantlock
-
 function setup_repeat_acquire_release(
-    lock;
+    lck;
     ntries = 2^2,
     nrlocks = 2^8,
     ntasks = Threads.nthreads(),
@@ -17,14 +15,14 @@ function setup_repeat_acquire_release(
     barrier = CentralizedBarrier(ntasks)
     workers = map(1:ntasks) do i
         Threads.@spawn begin
-            acquire(lock)
-            release(lock)
+            lock_read(lck)
+            unlock_read(lck)
             cycle!(init[i])
             cycle!(init[i])
             for _ in 1:ntries
                 for _ in 1:nrlocks
-                    acquire(lock)
-                    release(lock)
+                    lock_read(lck)
+                    unlock_read(lck)
                 end
                 cycle!(barrier[i], nspins_barrier)
             end
@@ -50,7 +48,7 @@ function setup(;
     nrlocks = smoke ? 3 : 2^8,
     ntasks_list = default_ntasks_list(),
     nspins_barrier = 1_000_000,
-    locks = [read_write_locks, raynal_read_write_locks, single_reentrantlock],
+    locks = [ReadWriteLock, ReentrantLock],
 )
     suite = BenchmarkGroup()
     for ntasks in ntasks_list
@@ -61,7 +59,7 @@ function setup(;
                 benchmark(),
                 setup = begin
                     benchmark = setup_repeat_acquire_release(
-                        $factory()[1];
+                        $factory();
                         ntries = $ntries,
                         nrlocks = $nrlocks,
                         ntasks = $ntasks,

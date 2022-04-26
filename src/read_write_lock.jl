@@ -1,10 +1,12 @@
+abstract type AbstractReadWriteLock <: Base.AbstractLock end
+
 const NOTLOCKED = UInt64(0)
 const NREADERS_INC = UInt64(2)
 const WRITELOCK_MASK = UInt64(1)
 
 const NReadersAndWritelock = UInt64
 
-mutable struct ReadWriteLock <: ReadWriteLockable
+mutable struct ReadWriteLock <: AbstractReadWriteLock
     @atomic nreaders_and_writelock::NReadersAndWritelock
     # TODO: use condition variables with lock-free notify
     @const lock::ReentrantLock
@@ -23,9 +25,11 @@ function ReadWriteLock()
 end
 
 # Not very efficient but lock-free
-function ConcurrentUtils.try_acquire_read(rwlock::ReadWriteLock; ntries::Integer = 128)
-    old = @atomic :monotonic rwlock.nreaders_and_writelock
-    for _ in 1:ntries
+function ConcurrentUtils.trylock_read(rwlock::ReadWriteLock; nspins = -∞, ntries = -∞)
+    local ns::Int = 0
+    local nt::Int = 0
+    while true
+        old = @atomic :monotonic rwlock.nreaders_and_writelock
         if iszero(old & WRITELOCK_MASK)
             # Try to acquire reader lock without the responsibility to receive or send the
             # notification:
@@ -35,15 +39,16 @@ function ConcurrentUtils.try_acquire_read(rwlock::ReadWriteLock; ntries::Integer
                 rwlock.nreaders_and_writelock,
                 old => old + NREADERS_INC,
             )
-            success && return Ok(nothing)
-        else
-            return Err(AcquiredByWriterError())
+            success && return true
+            nt += 1
+            nt < ntries || return false
         end
+        ns += 1
+        ns < nspins || return false
     end
-    return Err(TooManyTries())
 end
 
-function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)
+function ConcurrentUtils.lock_read(rwlock::ReadWriteLock)
 
     # Using hardware FAA
     ptr = Ptr{NReadersAndWritelock}(
@@ -69,7 +74,7 @@ function ConcurrentUtils.acquire_read(rwlock::ReadWriteLock)
     end
 end
 
-function ConcurrentUtils.release_read(rwlock::ReadWriteLock)
+function ConcurrentUtils.unlock_read(rwlock::ReadWriteLock)
 
     # Using hardware FAA
     ptr = Ptr{NReadersAndWritelock}(
@@ -89,27 +94,23 @@ function ConcurrentUtils.release_read(rwlock::ReadWriteLock)
     return
 end
 
-function ConcurrentUtils.try_acquire_write(rwlock::ReadWriteLock)
+function Base.trylock(rwlock::ReadWriteLock)
     _, success = @atomicreplace(
         :acquire_release,
         :monotonic,
         rwlock.nreaders_and_writelock,
         NOTLOCKED => WRITELOCK_MASK,
     )
-    if success
-        return Ok(nothing)
-    else
-        return Err(NotAcquirableError())
-    end
+    return success::Bool
 end
 
-function ConcurrentUtils.acquire_write(rwlock::ReadWriteLock)
-    if Try.isok(try_acquire_write(rwlock))
+function Base.lock(rwlock::ReadWriteLock)
+    if trylock(rwlock)
         return
     end
     lock(rwlock.lock) do
         while true
-            if Try.isok(try_acquire_write(rwlock))
+            if trylock(rwlock)
                 return
             end
             wait(rwlock.cond_write)
@@ -117,7 +118,7 @@ function ConcurrentUtils.acquire_write(rwlock::ReadWriteLock)
     end
 end
 
-function ConcurrentUtils.release_write(rwlock::ReadWriteLock)
+function Base.unlock(rwlock::ReadWriteLock)
     @assert !iszero(rwlock.nreaders_and_writelock & WRITELOCK_MASK)
     @atomic :acquire_release rwlock.nreaders_and_writelock &= ~WRITELOCK_MASK
     lock(rwlock.lock) do
@@ -125,4 +126,20 @@ function ConcurrentUtils.release_write(rwlock::ReadWriteLock)
         notify(rwlock.cond_write; all = false)
     end
     return
+end
+
+###
+### High-level APIs
+###
+
+ConcurrentUtils.lock_read(lck) = lock(lck)
+ConcurrentUtils.unlock_read(lck) = unlock(lck)
+
+function ConcurrentUtils.lock_read(f, lock)
+    lock_read(lock)
+    try
+        return f()
+    finally
+        unlock_read(lock)
+    end
 end

@@ -9,8 +9,7 @@ function test_serial()
     @test tls[][] == 123
 end
 
-function check_concurrent_increments(ntasks, ntries)
-    tls = ThreadLocalStorage(Ref{Any})
+function check_concurrent_increments!(tls, ntasks, ntries)
     outputs = zeros(Int, ntasks)
     @sync begin
         for itask in 1:ntasks
@@ -28,8 +27,19 @@ end
 
 function test_concurrent_increments(; ntries = 128)
     @testset for ntasks in [Threads.nthreads(), 64 * Threads.nthreads()]
-        actual = check_concurrent_increments(ntasks, ntries)
+        tls = ThreadLocalStorage(Ref{Int})
+        actual = check_concurrent_increments!(tls, ntasks, ntries)
         @test actual == fill(ntries, ntasks)
+
+        storages = unsafe_takestorages!(tls)
+        @test length(storages) == Threads.nthreads()  # in the current implementation
+        @test all(ref isa Ref{Int} for ref in storages)
+
+        @test isempty(tls.storages)
+        tls[]
+        @test !isempty(tls.storages)
+        empty!(tls)
+        @test isempty(tls.storages)
     end
 end
 

@@ -7,11 +7,11 @@ ConcurrentUtils.jl uses underscore `_` to separate underlying concepts.
 
 * `try_` (prefix): Use Try.jl-based error handling
 * `_or` (suffix): Run a callback upon some kind of "failure"
-* `race`
+* `race`: A name "modifier" for a racy variant.
 
 Common verbs that appear as a primitive concept:
 
 * `put`
 * `fetch`
-* `acquire`
-* `release`
+* `lock`
+* `unlock`
