@@ -46,15 +46,18 @@ DocumentationOverview.table_md(
 @once
 ```
 
-## Locks
+## Read-write Lock
 
 ```@eval
 using DocumentationOverview
 using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
+        ReadWriteLock,
+        lock_read,
+        unlock_read,
+        trylock_read,
         read_write_lock,
-        Backoff,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -62,8 +65,11 @@ DocumentationOverview.table_md(
 ```
 
 ```@docs
+ReadWriteLock
+lock_read
+unlock_read
+trylock_read
 read_write_lock
-Backoff
 ```
 
 ## Guards
@@ -98,6 +104,7 @@ using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
         ThreadLocalStorage,
+        Backoff,
         spinloop,
     ],
     namespace = ConcurrentUtils,
@@ -107,5 +114,6 @@ DocumentationOverview.table_md(
 
 ```@docs
 ThreadLocalStorage
+Backoff
 spinloop
 ```
