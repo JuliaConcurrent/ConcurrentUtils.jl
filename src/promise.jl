@@ -1,11 +1,13 @@
 struct NotSet end
+const NOTSET = NotSet()
 
 mutable struct Promise{T}
     @atomic value::Union{T,NotSet}
     @const cond::Threads.Condition
+    global _Promise(::Type{T}, value, cond) where {T} = new{T}(value, cond)
 end
 
-Promise{T}() where {T} = Promise{T}(NotSet(), Threads.Condition())
+Promise{T}() where {T} = _Promise(T, NotSet(), Threads.Condition())
 Promise() = Promise{Any}()
 
 function Base.fetch(promise::Promise)
@@ -74,4 +76,9 @@ function Base.put!(promise::Promise{T}, value) where {T}
     Try.unwrap_or_else(try_race_put!(promise, value)) do existing
         throw(OccupiedError{T}(existing))
     end
+end
+
+function Serialization.serialize(s::AbstractSerializer, promise::Promise{T}) where {T}
+    dummy = _Promise(T, NotSet(), promise.cond)
+    invoke(Serialization.serialize, Tuple{AbstractSerializer,Any}, s, dummy)
 end

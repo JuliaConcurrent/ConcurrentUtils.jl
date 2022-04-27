@@ -13,10 +13,4 @@ function test_serial_tasklet()
     @test try_race_fetch(t) == Ok(t())
 end
 
-get_a_dict() = @once Dict(:a => 1, :b => 2, :c => 3)
-
-function test_get_a_dict()
-    @test get_a_dict() === get_a_dict()
-end
-
 end  # module

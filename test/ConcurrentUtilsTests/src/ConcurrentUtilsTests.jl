@@ -4,6 +4,7 @@ include("utils.jl")
 
 include("test_promise.jl")
 include("test_tasklet.jl")
+include("test_once.jl")
 include("test_thread_local_storage.jl")
 
 # Locks
