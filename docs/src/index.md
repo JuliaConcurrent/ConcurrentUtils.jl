@@ -34,7 +34,7 @@ using ConcurrentUtils
 DocumentationOverview.table_md(
     :[
         var"@tasklet",
-        var"@once",
+        Once,
     ],
     namespace = ConcurrentUtils,
     signature = :name,
@@ -43,7 +43,7 @@ DocumentationOverview.table_md(
 
 ```@docs
 @tasklet
-@once
+Once
 ```
 
 ## Read-write Lock
