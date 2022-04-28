@@ -2,13 +2,13 @@ baremodule ConcurrentUtils
 
 export
     # Macros
-    @once,
     @tasklet,
     # Constructors
     Backoff,
     Guard,
     NotSetError,
     OccupiedError,
+    Once,
     Promise,
     ReadWriteGuard,
     ReadWriteLock,
@@ -27,7 +27,6 @@ InternalPrelude.@exported_function try_race_fetch
 InternalPrelude.@exported_function try_race_put!
 InternalPrelude.@exported_function try_race_put_with!
 
-macro once end
 macro tasklet end
 
 struct OccupiedError{T} <: InternalPrelude.Exception
@@ -90,9 +89,10 @@ using Random: Xoshiro
 
 import UnsafeAtomics: UnsafeAtomics, acq_rel
 using ExternalDocstrings: @define_docstrings
+using Serialization: AbstractSerializer, Serialization
 using Try: Try, Ok, Err, @?
 
-import ..ConcurrentUtils: @once, @tasklet
+import ..ConcurrentUtils: @tasklet
 using ..ConcurrentUtils:
     AbstractGuard,
     AbstractReadWriteGuard,
@@ -122,6 +122,7 @@ end
 
 include("utils.jl")
 include("promise.jl")
+include("once.jl")
 include("tasklet.jl")
 include("thread_local_storage.jl")
 
@@ -133,6 +134,7 @@ include("backoff.jl")
 end  # module Internal
 
 const Promise = Internal.Promise
+const Once = Internal.Once
 const ThreadLocalStorage = Internal.ThreadLocalStorage
 const ReadWriteLock = Internal.ReadWriteLock
 const Backoff = Internal.Backoff
