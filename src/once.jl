@@ -5,12 +5,12 @@ end
 
 function Once{T}() where {T}
     T isa Type || _once_invalid_type_parameter(T)
-    return Once{T,Type{T}}(T,Promise{T}())
+    return Once{T,Type{T}}(T, Promise{T}())
 end
 
 function Once{T}(f) where {T}
     T isa Type || _once_invalid_type_parameter(T)
-    return Once{T,_typeof(f)}(f,Promise{T}())
+    return Once{T,_typeof(f)}(f, Promise{T}())
 end
 
 @noinline _once_invalid_type_parameter(@nospecialize T) =
