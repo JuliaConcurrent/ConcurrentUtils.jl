@@ -89,7 +89,6 @@ using Random: Xoshiro
 
 import UnsafeAtomics: UnsafeAtomics, acq_rel
 using ExternalDocstrings: @define_docstrings
-using Serialization: AbstractSerializer, Serialization
 using Try: Try, Ok, Err, @?
 
 import ..ConcurrentUtils: @tasklet

@@ -77,8 +77,3 @@ function Base.put!(promise::Promise{T}, value) where {T}
         throw(OccupiedError{T}(existing))
     end
 end
-
-function Serialization.serialize(s::AbstractSerializer, promise::Promise{T}) where {T}
-    dummy = _Promise(T, NotSet(), promise.cond)
-    invoke(Serialization.serialize, Tuple{AbstractSerializer,Any}, s, dummy)
-end
